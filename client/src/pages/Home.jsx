@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Banner from '../components/Banner';
 import PanelContainer from '../components/PanelContainer';
 import config from '../config.json';
@@ -7,9 +8,59 @@ const Home = () => {
   const [visiblePanels, setVisiblePanels] = useState(
     Object.fromEntries(config.panels.map(panel => [panel.id, true]))
   );
-
-  const [tasks, setTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const queryClient = useQueryClient();
+
+  // Fetch tasks
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['/api/tasks'],
+  });
+
+  // Create task mutation
+  const createTaskMutation = useMutation({
+    mutationFn: async (taskData) => {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData),
+      });
+      if (!res.ok) throw new Error('Failed to create task');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+  });
+
+  // Update task mutation
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ id, ...data }) => {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update task');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+  });
+
+  // Delete task mutation
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete task');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+  });
 
   const togglePanel = (panelId) => {
     setVisiblePanels(prev => ({
@@ -21,65 +72,50 @@ const Home = () => {
   const handleAddTask = (taskTitle) => {
     if (!taskTitle.trim()) return;
 
+    const maxOrder = tasks.length ? Math.max(...tasks.map(t => t.order)) : 0;
     const newTask = {
-      id: Date.now(),
       title: taskTitle,
       section: 'Triage',
       completed: false,
-      order: tasks.length * 1000
+      order: maxOrder + 1000
     };
 
-    setTasks(prev => [...prev, newTask]);
+    createTaskMutation.mutate(newTask);
   };
 
   const moveTask = (draggedTask, targetSection, targetIndex) => {
-    setTasks(prevTasks => {
-      const tasksCopy = [...prevTasks];
-      const sectionTasks = tasksCopy.filter(t => t.section === targetSection);
+    const sectionTasks = tasks.filter(t => t.section === targetSection);
 
-      // Remove the task from its current position
-      const taskIndex = tasksCopy.findIndex(t => t.id === draggedTask.id);
-      if (taskIndex > -1) {
-        tasksCopy.splice(taskIndex, 1);
-      }
+    let newOrder;
+    if (sectionTasks.length === 0) {
+      newOrder = 10000;
+    } else if (targetIndex === 0) {
+      newOrder = sectionTasks[0].order / 2;
+    } else if (targetIndex >= sectionTasks.length) {
+      newOrder = sectionTasks[sectionTasks.length - 1].order + 1000;
+    } else {
+      newOrder = (sectionTasks[targetIndex - 1].order + sectionTasks[targetIndex].order) / 2;
+    }
 
-      // Calculate new order
-      let newOrder;
-      if (sectionTasks.length === 0) {
-        newOrder = 10000; // First task in section
-      } else if (targetIndex === 0) {
-        newOrder = sectionTasks[0].order / 2; // Before first task
-      } else if (targetIndex >= sectionTasks.length) {
-        newOrder = sectionTasks[sectionTasks.length - 1].order + 1000; // After last task
-      } else {
-        // Between two tasks
-        newOrder = (sectionTasks[targetIndex - 1].order + sectionTasks[targetIndex].order) / 2;
-      }
-
-      // Insert the task at the new position with updated section and order
-      const updatedTask = { ...draggedTask, section: targetSection, order: newOrder };
-      tasksCopy.push(updatedTask);
-
-      // Sort tasks by section and order
-      return tasksCopy.sort((a, b) => {
-        if (a.section !== b.section) return a.section.localeCompare(b.section);
-        return a.order - b.order;
-      });
+    updateTaskMutation.mutate({
+      id: draggedTask.id,
+      section: targetSection,
+      order: newOrder
     });
   };
 
   const toggleTaskCompletion = (taskId) => {
-    setTasks(prevTasks => 
-      prevTasks.map(task => 
-        task.id === taskId 
-          ? { ...task, completed: !task.completed }
-          : task
-      )
-    );
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      updateTaskMutation.mutate({
+        id: taskId,
+        completed: !task.completed
+      });
+    }
   };
 
   const deleteTask = (taskId) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    deleteTaskMutation.mutate(taskId);
     if (selectedTaskId === taskId) {
       setSelectedTaskId(null);
     }
