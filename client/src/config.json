@@ -1,0 +1,16 @@
+{
+  "productName": "Task Management Application",
+  "colorScheme": {
+    "background": "#212121",
+    "foreground": "#dddddd", 
+    "accent": "#00CEF7"
+  },
+  "panels": [
+    { "id": "priority", "title": "Priority", "icon": "target" },
+    { "id": "tasks", "title": "Tasks", "icon": "list" },
+    { "id": "task", "title": "Task", "icon": "check" },
+    { "id": "hours", "title": "Hours", "icon": "calendar" },
+    { "id": "reflect", "title": "Reflect", "icon": "lightbulb" },
+    { "id": "minutes", "title": "Minutes", "icon": "hourglass" }
+  ]
+}
