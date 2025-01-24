@@ -1,0 +1,324 @@
+📋 Task Management Application - Functional Requirements
+
+1️⃣ Core Features
+
+Panel System
+
+App Layout:
+
+Banner spans the entire top of the screen.
+
+Below the banner are 6 configurable vertical panels side-by-side, each with unique functionality:
+
+Priority Panel: Empty except for a "gun target" icon and the word "Priority" (toggled closed by default).
+
+Tasks Panel: Primary task management interface with the icon of a checkbox and the title "Tasks." Contains 4 collapsible list sections (Triage, A, B, C).
+
+Task Details Panel: Form displaying and allowing editing of all task data (e.g., "Details," "Contacts," "Resources").
+
+Hours Panel: Displays hours of the day from 8 AM to 10 PM in a paper day-planner-style layout (thin lines for each hour, no AM/PM labels).
+
+Reflect Panel: Empty except for a lightbulb icon and the title "Reflect."
+
+Minutes Panel: Empty except for an hourglass icon and the title "Minutes."
+
+Panel Visibility Controls:
+
+Individual toggle buttons for each panel.
+
+Panels maintain state when hidden/shown.
+
+Smooth transition animations when toggling visibility.
+
+Panels collapse to zero width when hidden.
+
+Panel Layout:
+
+Fixed maximum width of 560px per panel.
+
+Full-height panels.
+
+Horizontal scrolling when multiple panels are visible.
+
+Dark theme with accent color highlights.
+
+2️⃣ Task Management
+
+Task Creation & Entry
+
+Quick Add Feature:
+
+Text input field in the top banner.
+
+Pressing Enter submits a new task.
+
+Tasks are automatically added to the Triage panel.
+
+New tasks appear at the bottom of the panel.
+
+Task Organization Structure:
+
+Four-tier panel hierarchy:
+
+Triage: Initial entry point for all new tasks.
+
+Priority A: Highest-priority tasks.
+
+Priority B: Medium-priority tasks.
+
+Priority C: Lower-priority tasks.
+
+Each tier is collapsible/expandable.
+
+Caret icons indicate collapse state.
+
+Panel name remains visible even when collapsed.
+
+Task Movement & Organization
+
+Drag and Drop Functionality:
+
+Vertical reordering within panels.
+
+Cross-panel movement.
+
+Visual feedback during drag operations.
+
+Automatic reordering of remaining tasks.
+
+Order preserved during panel switches.
+
+Order Management:
+
+Decimal-based ordering system (10000.0000 default).
+
+1000-point spacing between tasks.
+
+Automatic reordering upon drop.
+
+Task Interaction
+
+Selection Behavior:
+
+Click to select/deselect tasks.
+
+Selected tasks highlighted with an accent color.
+
+Only one task can be selected at a time.
+
+Selection persists when switching panels.
+
+Task Controls:
+
+Checkbox for completion status.
+
+Delete button (× symbol).
+
+Drag handle.
+
+Date picker trigger.
+
+Controls fade in on hover.
+
+Task Properties & Details
+
+Basic Task Display:
+
+Title (always visible).
+
+Completion checkbox.
+
+Date field (MM/dd format).
+
+Delete button.
+
+Extended Properties (in Task Details Panel):
+
+Editable full title.
+
+Overview text field (resizable).
+
+Detailed description field (resizable).
+
+Revisit date with a calendar picker.
+
+Visual States:
+
+Completed tasks show strikethrough.
+
+Selected tasks highlighted.
+
+Hover state for task containers.
+
+Drag preview during movement.
+
+3️⃣ View Management
+
+View Filter Dropdown
+
+Location: Dropdown in the top banner.
+
+Options:
+
+All tasks.
+
+Triage view.
+
+Today's tasks.
+
+Tomorrow's tasks.
+
+This week's tasks.
+
+Next week's tasks.
+
+This month's tasks.
+
+Next month's tasks.
+
+Filter Behavior:
+
+Instantly updates visible tasks.
+
+Maintains task selection.
+
+Preserves panel organization.
+
+Displays an empty state when no tasks match the filter.
+
+Date Ranges for Filters:
+
+Today's Tasks: Tasks with the revisit date set to the current local date.
+
+Tomorrow's Tasks: Tasks with the revisit date set to the day after the current local date.
+
+This Week's Tasks: Tasks with revisit dates falling between Monday at 12:00 AM of the current week and Sunday at 11:59 PM.
+
+Next Week's Tasks: Tasks with revisit dates falling between Monday at 12:00 AM of the next week and Sunday at 11:59 PM of that week.
+
+This Month's Tasks: Tasks with revisit dates within the current calendar month.
+
+Next Month's Tasks: Tasks with revisit dates within the next calendar month.
+
+4️⃣ Revisit Date Management
+
+Date Display
+
+Compact format (MM/dd) in the task list.
+
+Full format date in task details.
+
+Dynamic Labels: Replace the date with "Today" or "Tomorrow" when applicable.
+
+Date-Based Features
+
+Filtering: Tasks filtered by the date range in the view dropdown.
+
+Date Picker:
+
+Clicking on a task’s date field opens a calendar date picker.
+
+Today's date: Highlighted with an accent-colored border.
+
+Selected date: Highlighted with an accent-colored background.
+
+Includes month navigation.
+
+5️⃣ Real-Time Updates
+
+Immediate UI updates on task changes.
+
+Automatic task list refresh.
+
+Order updates in real-time.
+
+Panel content synchronization.
+
+6️⃣ Error Handling & Feedback
+
+User Feedback
+
+Toast notifications for actions.
+
+Error messages for failed operations.
+
+Loading states during operations.
+
+Success confirmations.
+
+Error Prevention
+
+No empty task creation.
+
+Valid date selection only.
+
+Confirmation for deletions.
+
+Preserved task order on failed moves.
+
+7️⃣ Data Model
+
+Task Properties:
+
+Unique identifier.
+
+Title (required).
+
+Completion status (boolean).
+
+Panel assignment (Triage/A/B/C).
+
+Order position (decimal).
+
+Revisit date (optional).
+
+Overview text (optional).
+
+Detailed description (optional).
+
+Constraints:
+
+Title cannot be empty.
+
+Panel must be valid.
+
+Order must be unique within a panel.
+
+Dates must be valid.
+
+8️⃣ Performance Requirements
+
+Immediate checkbox toggle response.
+
+Smooth drag-and-drop animation.
+
+Quick panel switching.
+
+Instant filter application.
+
+9️⃣ Color Scheme Configuration
+
+Core Colors:
+
+Background: #212121 (dark grey).
+
+Foreground: #dddddd (light grey).
+
+Accent: #00CEF7 (bright blue).
+
+Color Applications:
+
+Selected panel indicators use accent color.
+
+Active toggle buttons use accent color.
+
+Task selection highlight uses accent color.
+
+Calendar selected date uses solid accent color fill.
+
+Calendar today's date uses accent color outline.
+
+Interactive elements use accent color on hover.
+
+Text on accent-colored elements uses background color.
+

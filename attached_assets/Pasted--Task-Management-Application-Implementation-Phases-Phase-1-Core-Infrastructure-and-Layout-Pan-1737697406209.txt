@@ -1,0 +1,236 @@
+📋 Task Management Application - Implementation Phases
+
+Phase 1: Core Infrastructure and Layout
+
+Panel System
+
+App Layout:
+
+Create the banner spanning the entire top of the screen.
+
+Add 6 configurable vertical panels side-by-side below the banner, each with an icon to the left of the panel title as specified in the requirements (e.g., a "gun target" for Priority, a checkbox for Tasks, etc.):
+
+Priority Panel (empty, default toggled closed).
+
+Tasks Panel (includes 4 collapsible list sections one above the other: Triage, A, B, C).
+
+Task Details Panel (placeholder form with “Details,” “Contacts,” “Resources” headers).
+
+Hours Panel (display hours from 8 AM to 10 PM with thin lines; no AM/PM labels).
+
+Reflect Panel (empty, title: "Reflect").
+
+Minutes Panel (empty, title: "Minutes").
+
+Panel Visibility Controls:
+
+Add individual toggle buttons for each panel.
+
+Implement state persistence for panel visibility.
+
+Add smooth transition animations for toggling panels.
+
+Panel Layout:
+
+Set fixed maximum width of 560px per panel.
+
+Ensure panels are full-height.
+
+Add horizontal scrolling for multiple visible panels.
+
+Apply dark theme with accent color highlights.
+
+Basic Task Management
+
+Quick Add Feature:
+
+Implement text input field in the banner for task creation.
+
+Submit tasks to the Triage list on Enter.
+
+Display new tasks at the bottom of the Triage panel.
+
+Task Organization Structure:
+
+Create collapsible/expandable sections for Triage, A, B, C panels.
+
+Add caret icons for collapse state.
+
+Phase 2: Task Movement and Organization
+
+Drag and Drop Functionality
+
+Enable vertical reordering within panels.
+
+Add cross-panel drag-and-drop functionality.
+
+Provide visual feedback during drag operations (e.g., shadow or placeholder).
+
+Implement automatic reordering of tasks upon drop.
+
+Order Management
+
+Use decimal-based ordering system with 1000-point spacing.
+
+Preserve task order during panel switches.
+
+Phase 3: Task Interaction and Details
+
+Task Interaction
+
+Selection Behavior:
+
+Allow click-to-select/deselect tasks.
+
+Highlight selected tasks with the accent color.
+
+Ensure only one task is selectable at a time.
+
+Maintain task selection when switching panels.
+
+Task Controls:
+
+Add completion checkbox.
+
+Include delete button (× symbol).
+
+Provide a drag handle for reordering.
+
+Add a trigger for the date picker.
+
+Task Details Panel
+
+Add editable fields for:
+
+Title.
+
+Overview text (resizable).
+
+Detailed description (resizable).
+
+Revisit date with calendar picker.
+
+Ensure changes persist automatically.
+
+Phase 4: View Management and Filtering
+
+View Filter Dropdown
+
+Add dropdown in the banner with the following options:
+
+All tasks.
+
+Triage view.
+
+Today's tasks.
+
+Tomorrow's tasks.
+
+This week’s tasks.
+
+Next week’s tasks.
+
+This month’s tasks.
+
+Next month’s tasks.
+
+Filter Behavior:
+
+Update visible tasks instantly based on the selected filter.
+
+Maintain task selection during filtering.
+
+Preserve panel organization during filtering.
+
+Date Ranges for Filters:
+
+Today: Current local date.
+
+Tomorrow: Day after the current local date.
+
+This Week: Monday 12:00 AM to Sunday 11:59 PM of the current week.
+
+Next Week: Monday 12:00 AM to Sunday 11:59 PM of the following week.
+
+This Month: Current calendar month.
+
+Next Month: Next calendar month.
+
+Phase 5: Revisit Date Management
+
+Date Display
+
+Show compact MM/dd format in task list.
+
+Replace with "Today" or "Tomorrow" dynamically when applicable.
+
+Display full date format in the Task Details Panel.
+
+Date Picker
+
+Add a calendar date picker triggered by the task’s date field.
+
+Highlight today’s date with an accent-colored border.
+
+Highlight selected date with an accent-colored background.
+
+Include month navigation.
+
+Phase 6: Real-Time Updates
+
+Implement immediate UI updates for task changes.
+
+Enable automatic task list refresh.
+
+Synchronize content across panels in real-time.
+
+Ensure order updates are reflected immediately.
+
+Phase 7: Error Handling and Feedback
+
+User Feedback
+
+Add toast notifications for key actions (e.g., task creation, completion).
+
+Display error messages for failed operations.
+
+Show loading states for long-running operations.
+
+Provide success confirmations for key actions.
+
+Error Prevention
+
+Prevent empty task creation.
+
+Ensure only valid dates can be selected.
+
+Require confirmation for deletions.
+
+Preserve task order on failed moves.
+
+Phase 8: Final Touches and Optimization
+
+Performance Enhancements
+
+Ensure immediate response for checkbox toggles.
+
+Optimize drag-and-drop animations for smoothness.
+
+Minimize lag during panel switching.
+
+Speed up filter applications.
+
+Color Scheme Refinements
+
+Ensure all colors used in the application are pulled from the config.json file.
+
+Use the specified background, foreground, and accent colors for all elements.
+
+Derive brighter or darker versions of these colors programmatically (e.g., by adjusting brightness or opacity percentages). Apply accent color for interactive elements (e.g., toggles, selections).
+
+Use consistent color highlights for selected tasks and calendar dates.
+
+
+
+This phased approach ensures step-by-step development and QA, allowing functionality to build progressively while maintaining a stable foundation.
+

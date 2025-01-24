@@ -57,6 +57,13 @@ body {
   border-right: 1px solid var(--foreground);
   overflow-y: auto;
   background-color: var(--background);
+  transition: width 0.3s ease;
+}
+
+.panel.collapsed {
+  flex: 0 0 auto;
+  width: 60px;
+  padding: 1rem 0.5rem;
 }
 
 .panel:last-child {
@@ -73,14 +80,41 @@ body {
   border-bottom: 1px solid var(--foreground);
 }
 
+.collapsed .panel-header {
+  flex-direction: column;
+}
+
 .panel-title {
   color: var(--accent);
   font-size: 1.25rem;
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.collapsed .panel-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
 }
 
 .panel-icon {
   color: var(--accent);
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.toggle-button:hover {
+  opacity: 0.8;
 }
 
 .hours-list {
@@ -91,10 +125,60 @@ body {
   padding: 0.5rem;
 }
 
-.hours-list li {
+.hour-item {
   display: flex;
   align-items: center;
+  gap: 1rem;
   color: var(--foreground);
-  padding: 0.25rem 0;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+.hour-line {
+  flex: 1;
+  height: 1px;
+  background-color: var(--foreground);
+  opacity: 0.2;
+}
+
+.hour-label {
+  min-width: 2ch;
+  text-align: right;
+}
+
+.task-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-section {
+  padding: 0.5rem;
   border-bottom: 1px solid rgba(221, 221, 221, 0.1);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.section-caret {
+  transition: transform 0.3s ease;
+}
+
+.section-header:hover .section-caret {
+  transform: rotate(90deg);
+}
+
+.panel-content {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.collapsed .panel-content {
+  opacity: 0;
+  pointer-events: none;
 }
