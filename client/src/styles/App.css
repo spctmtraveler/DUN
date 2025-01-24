@@ -1,3 +1,4 @@
+/* Import colors from config.json */
 :root {
   --background: #212121;
   --foreground: #dddddd;
@@ -22,6 +23,7 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--background);
 }
 
 .banner {
@@ -44,9 +46,9 @@ body {
   width: 100%;
   height: calc(100vh - 4rem); /* Subtract banner height */
   overflow-x: auto;
+  background-color: var(--background);
 }
 
-/* Use CSS custom properties for dynamic widths */
 .panel {
   flex: 1 0 auto;
   width: clamp(560px, calc(100vw / 6), 100%);
@@ -54,6 +56,7 @@ body {
   padding: 1rem;
   border-right: 1px solid var(--foreground);
   overflow-y: auto;
+  background-color: var(--background);
 }
 
 .panel:last-child {
