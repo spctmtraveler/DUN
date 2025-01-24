@@ -114,7 +114,7 @@ body {
   overflow-y: auto;
   background-color: var(--background);
   transition: all 0.3s ease;
-  min-width: 560px;
+  min-width: 300px;
   max-width: 100%;
 }
 
