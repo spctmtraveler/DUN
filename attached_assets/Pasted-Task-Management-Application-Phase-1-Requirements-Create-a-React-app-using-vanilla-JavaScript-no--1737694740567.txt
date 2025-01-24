@@ -1,0 +1,148 @@
+Task Management Application - Phase 1 Requirements
+
+Create a React app using vanilla JavaScript (no TypeScript) and plain CSS (without Tailwind CSS or other CSS frameworks). The application should:
+
+
+
+Utilize traditional CSS files with class names or IDs for styling.
+
+Avoid inline CSS and dynamic class name utilities like classnames or cn.
+
+Maintain simplicity in code structure for easy debugging.
+
+Exclude unnecessary libraries or abstractions.
+
+The focus should be on creating a clean, straightforward implementation that adheres to the specified. technologies and approaches.
+
+
+
+The app should get all it's colors from a config.json file 
+
+
+
+The requirements and a mockup of the screen are attached.Objective
+
+Create a basic application layout to validate server functionality. This phase includes:
+
+A banner displaying the application name "DUN".
+
+six vertical panels below the banner with only their titles.
+
+All colors are to be pulled dynamically from a config.json file.
+
+Requirements
+
+1. Banner
+
+Spans the entire width of the page.
+
+Displays the text "DUN" centered horizontally and vertically.
+
+Styling:
+
+Background color: Pulled from config.json (background key).
+
+Text color: Pulled from config.json (foreground key).
+
+2. Panels
+
+Add 6 vertical panels directly below the banner:
+
+Titles:
+
+Priority
+
+Tasks
+
+Task
+
+Hours
+
+Reflect
+
+Minutes
+
+Titles are centered horizontally within each panel.
+
+Icons are placed to thleft of each title:
+
+[gun sites icon] "Priority"
+
+[check list icon] "Tasks"
+
+[checkmark icon] "Task"
+
+[week calendar icon] "Hours"
+
+[lightbulb icon] "Reflect"
+
+[Hourglass icon] "Minutes"
+
+Sizing and Layout:
+
+Panels are displayed side-by-side horizontally.
+
+Panels have a minimum width of 560px for each panel.
+
+Otherwise panels all expand equally wide to fill the available wideth in their space.
+
+Panels should be the full height of the viewport (window bottom to the banner's button edge)
+
+If the total width exceeds the viewport, enable horizontal scrolling.
+
+Styling:
+
+Panel & Page Background Color: Pulled from config.json (background key).
+
+Panel Text Color: Pulled from config.json (foreground key).
+
+Page and Panel Titles: Use the accent color.
+
+Borders and Lines: Use the foreground color for subtle dividers between panels.
+
+Icons: Use the accent color for all panel icons.
+
+Checkboxes and Toggle Switches: Styled using the accent color for active states and foreground for inactive states.
+
+Hover Effects: Apply a slightly lighter or darker version of the accent color for interactive elements during hover states.
+
+Panel text color: Pulled from config.json (foreground key).
+
+
+
+Config.json Example
+
+{
+  "productName": "Task Management Application",
+  "colorScheme": {
+    "background": "#212121",
+    "foreground": "#dddddd",
+    "accent": "#00CEF7"
+  },
+  "panels": [
+    { "id": "priority", "title": "Priority" },
+    { "id": "tasks", "title": "Tasks" },
+    { "id": "details", "title": "Details" },
+    { "id": "hours", "title": "Hours" },
+    { "id": "reflect", "title": "Reflect" }
+  ]
+}
+
+Validation Steps
+
+Ensure the server runs successfully without errors.
+
+Verify:
+
+The banner is displayed with the correct styling and text.
+
+Each panel is rendered with its title and icon.
+
+Colors match the values in config.json.
+
+Test horizontal scrolling when panels exceed the viewport width.
+
+Confirm that no colors are hardcoded in the application.
+
+This document provides all the details needed for Phase 1 implementation. The goal is to establish the foundation for further development while ensuring the server runs properly.
+
