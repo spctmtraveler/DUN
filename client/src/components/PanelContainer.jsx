@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Panel from './Panel';
 import config from '../config.json';
 
-const PanelContainer = ({ visiblePanels }) => {
+const PanelContainer = ({ visiblePanels, tasks }) => {
   const visiblePanelCount = Object.values(visiblePanels).filter(Boolean).length;
   const panelWidth = visiblePanelCount > 0 ? `${100 / visiblePanelCount}%` : '0';
 
@@ -16,6 +16,7 @@ const PanelContainer = ({ visiblePanels }) => {
           icon={panel.icon}
           isVisible={visiblePanels[panel.id]}
           width={panelWidth}
+          tasks={tasks}
         />
       ))}
     </div>
