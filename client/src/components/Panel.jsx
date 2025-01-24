@@ -1,7 +1,7 @@
 import React from 'react';
 import { AiOutlineAim, AiOutlineUnorderedList, AiOutlineCheck, AiOutlineCalendar, AiOutlineBulb, AiOutlineHourglass } from 'react-icons/ai';
-import { ChevronRight } from 'lucide-react';
 import TaskSection from './TaskSection';
+import TaskDetails from './TaskDetails';
 
 const iconMap = {
   target: AiOutlineAim,
@@ -26,6 +26,7 @@ const Panel = ({
   selectedTaskId
 }) => {
   const Icon = iconMap[icon];
+  const selectedTask = tasks.find(task => task.id === selectedTaskId);
 
   const renderHoursList = () => {
     const hours = [];
@@ -80,6 +81,9 @@ const Panel = ({
           <div className="task-sections">
             {renderTaskSections()}
           </div>
+        )}
+        {title === 'Task' && (
+          <TaskDetails task={selectedTask} />
         )}
       </div>
     </div>
