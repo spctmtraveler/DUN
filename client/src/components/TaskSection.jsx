@@ -1,18 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { ChevronRight } from 'lucide-react';
 import Task from './Task';
 
-const TaskSection = ({ id, title, tasks = [], onDrop }) => {
+const TaskSection = ({ id, title, tasks = [], onMoveTask }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    drop: (item) => {
-      if (item.sectionId !== id) {
-        onDrop(item, id);
+    drop: (item, monitor) => {
+      const didDrop = monitor.didDrop();
+      if (didDrop) {
+        return;
+      }
+
+      if (item.section !== id) {
+        const targetIndex = tasks.length;
+        onMoveTask(item, id, targetIndex);
       }
     },
     collect: (monitor) => ({
-      isOver: monitor.isOver(),
+      isOver: monitor.isOver({ shallow: true }),
     }),
   });
 
@@ -21,20 +29,28 @@ const TaskSection = ({ id, title, tasks = [], onDrop }) => {
       ref={drop}
       className={`task-section ${isOver ? 'drop-target' : ''}`}
     >
-      <div className="section-header">
-        <ChevronRight className="section-caret" size={16} />
+      <div 
+        className="section-header"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <ChevronRight 
+          className={`section-caret ${isExpanded ? 'rotate-90' : ''}`} 
+          size={16} 
+        />
         <span>{title}</span>
       </div>
-      <div className="section-content">
-        {tasks.map((task, index) => (
-          <Task
-            key={task.id}
-            {...task}
-            index={index}
-            sectionId={id}
-          />
-        ))}
-      </div>
+      {isExpanded && (
+        <div className="section-content">
+          {tasks.map((task, index) => (
+            <Task
+              key={task.id}
+              {...task}
+              index={index}
+              onMoveTask={onMoveTask}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

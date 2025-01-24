@@ -1,7 +1,7 @@
 import React from 'react';
 import { AiOutlineAim, AiOutlineUnorderedList, AiOutlineCheck, AiOutlineCalendar, AiOutlineBulb, AiOutlineHourglass } from 'react-icons/ai';
 import { ChevronRight } from 'lucide-react';
-import Task from './Task';
+import TaskSection from './TaskSection';
 
 const iconMap = {
   target: AiOutlineAim,
@@ -12,7 +12,7 @@ const iconMap = {
   hourglass: AiOutlineHourglass
 };
 
-const Panel = ({ id, title, icon, isVisible, width, tasks = [] }) => {
+const Panel = ({ id, title, icon, isVisible, width, tasks = [], onMoveTask }) => {
   const Icon = iconMap[icon];
 
   const renderHoursList = () => {
@@ -31,19 +31,16 @@ const Panel = ({ id, title, icon, isVisible, width, tasks = [] }) => {
   const renderTaskSections = () => {
     const sections = ['Triage', 'A', 'B', 'C'];
     return sections.map(section => {
-      const sectionTasks = tasks.filter(task => task.section === section);
+      const sectionTasks = tasks.filter(task => task.section === section)
+        .sort((a, b) => a.order - b.order);
       return (
-        <div key={section} className="task-section">
-          <div className="section-header">
-            <ChevronRight className="section-caret" size={16} />
-            <span>{section}</span>
-          </div>
-          <div className="section-content">
-            {sectionTasks.map((task) => (
-              <Task key={task.id} {...task} />
-            ))}
-          </div>
-        </div>
+        <TaskSection
+          key={section}
+          id={section}
+          title={section}
+          tasks={sectionTasks}
+          onMoveTask={onMoveTask}
+        />
       );
     });
   };

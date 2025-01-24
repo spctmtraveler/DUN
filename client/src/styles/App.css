@@ -210,17 +210,27 @@ body {
   gap: 0.5rem;
   color: var(--accent);
   cursor: pointer;
+  padding: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.section-header:hover {
+  background: rgba(0, 206, 247, 0.1);
 }
 
 .section-caret {
   transition: transform 0.3s ease;
 }
 
-.section-header:hover .section-caret {
+.section-caret.rotate-90 {
   transform: rotate(90deg);
 }
 
-/* Add to existing CSS file */
+.section-content {
+  padding: 0.5rem 0;
+  margin-left: 1.5rem;
+}
+
 .task {
   padding: 0.5rem;
   background: var(--background);
@@ -228,10 +238,22 @@ body {
   border-radius: 4px;
   margin-bottom: 0.5rem;
   transition: all 0.2s ease;
+  cursor: move;
 }
 
 .task.dragging {
+  opacity: 0.5;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.task.drop-target {
+  border: 1px dashed var(--accent);
+  background: rgba(0, 206, 247, 0.1);
+}
+
+.task-section.drop-target {
+  background: rgba(0, 206, 247, 0.05);
+  border-radius: 4px;
 }
 
 .task-content {
@@ -298,9 +320,4 @@ body {
 .drop-target {
   background: rgba(0, 206, 247, 0.1);
   border-radius: 4px;
-}
-
-.section-content {
-  padding: 0.5rem 0;
-  margin-left: 1.5rem;
 }

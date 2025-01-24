@@ -2,7 +2,7 @@ import React from 'react';
 import Panel from './Panel';
 import config from '../config.json';
 
-const PanelContainer = ({ visiblePanels, tasks }) => {
+const PanelContainer = ({ visiblePanels, tasks, onMoveTask }) => {
   const visiblePanelCount = Object.values(visiblePanels).filter(Boolean).length;
   const panelWidth = visiblePanelCount > 0 ? `${100 / visiblePanelCount}%` : '0';
 
@@ -17,6 +17,7 @@ const PanelContainer = ({ visiblePanels, tasks }) => {
           isVisible={visiblePanels[panel.id]}
           width={panelWidth}
           tasks={tasks}
+          onMoveTask={onMoveTask}
         />
       ))}
     </div>
