@@ -11,6 +11,7 @@ export function registerRoutes(app: Express): Server {
       const allTasks = await db.select().from(tasks).orderBy(tasks.order);
       res.json(allTasks);
     } catch (error) {
+      console.error("Error fetching tasks:", error);
       res.status(500).json({ message: "Error fetching tasks" });
     }
   });
@@ -28,6 +29,7 @@ export function registerRoutes(app: Express): Server {
       const [newTask] = await db.insert(tasks).values(taskData).returning();
       res.status(201).json(newTask);
     } catch (error) {
+      console.error("Error creating task:", error);
       res.status(500).json({ message: "Error creating task" });
     }
   });
@@ -36,18 +38,24 @@ export function registerRoutes(app: Express): Server {
   app.patch("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
     try {
+      // Create an update object only with the fields that are present in the request
+      const updateData: Partial<InsertTask> = {};
+
+      // Only include fields that are actually present in the request body
+      if (req.body.title !== undefined) updateData.title = req.body.title;
+      if (req.body.section !== undefined) updateData.section = req.body.section;
+      if (req.body.completed !== undefined) updateData.completed = req.body.completed;
+      if (req.body.order !== undefined) updateData.order = req.body.order;
+      if (req.body.overview !== undefined) updateData.overview = req.body.overview;
+      if (req.body.details !== undefined) updateData.details = req.body.details;
+      if (req.body.revisitDate !== undefined) updateData.revisitDate = new Date(req.body.revisitDate);
+
+      // Always update the updatedAt timestamp
+      updateData.updatedAt = new Date();
+
       const [updatedTask] = await db
         .update(tasks)
-        .set({
-          title: req.body.title,
-          section: req.body.section,
-          completed: req.body.completed,
-          order: req.body.order,
-          overview: req.body.overview,
-          details: req.body.details,
-          revisitDate: req.body.revisitDate,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(tasks.id, parseInt(id)))
         .returning();
 
@@ -56,6 +64,7 @@ export function registerRoutes(app: Express): Server {
       }
       res.json(updatedTask);
     } catch (error) {
+      console.error("Error updating task:", error);
       res.status(500).json({ message: "Error updating task" });
     }
   });
@@ -74,6 +83,7 @@ export function registerRoutes(app: Express): Server {
       }
       res.json(deletedTask);
     } catch (error) {
+      console.error("Error deleting task:", error);
       res.status(500).json({ message: "Error deleting task" });
     }
   });

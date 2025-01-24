@@ -25,18 +25,21 @@ const TaskDetails = React.memo(({ task }) => {
   const queryClient = useQueryClient();
 
   const updateTaskMutation = useMutation({
-    mutationFn: async (data) => {
-      const res = await fetch(`/api/tasks/${task.id}`, {
+    mutationFn: async ({ id, field, value }) => {
+      const res = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ [field]: value }),
       });
-      if (!res.ok) throw new Error('Failed to update task');
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to update task: ${errorText}`);
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    }
+    },
   });
 
   const handleChange = (e) => {
@@ -45,7 +48,21 @@ const TaskDetails = React.memo(({ task }) => {
       ...prev,
       [name]: value
     }));
-    updateTaskMutation.mutate({ ...formData, [name]: value });
+
+    // Only send update if we have a task
+    if (task) {
+      let updateValue = value;
+      // Convert date string to ISO format for the database
+      if (name === 'revisitDate' && value) {
+        updateValue = new Date(value).toISOString();
+      }
+
+      updateTaskMutation.mutate({
+        id: task.id,
+        field: name,
+        value: updateValue
+      });
+    }
   };
 
   if (!task) {
