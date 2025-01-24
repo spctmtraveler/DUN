@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Calendar } from 'lucide-react';
 
-const TaskDetails = ({ task, onClose }) => {
+const TaskDetails = React.memo(({ task }) => {
   const [formData, setFormData] = useState({
     title: '',
     overview: '',
@@ -109,6 +109,6 @@ const TaskDetails = ({ task, onClose }) => {
       </div>
     </div>
   );
-};
+});
 
 export default TaskDetails;
