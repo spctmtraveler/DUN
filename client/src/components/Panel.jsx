@@ -13,6 +13,18 @@ const iconMap = {
 const Panel = ({ title, icon }) => {
   const Icon = iconMap[icon];
 
+  const renderHoursList = () => {
+    const hours = [];
+    for (let i = 0; i < 24; i++) {
+      hours.push(
+        <li key={i}>
+          {i.toString().padStart(2, '0')}
+        </li>
+      );
+    }
+    return hours;
+  };
+
   return (
     <div className="panel">
       <div className="panel-header">
@@ -21,15 +33,7 @@ const Panel = ({ title, icon }) => {
       </div>
       {title === 'Hours' && (
         <ul className="hours-list">
-          {[...Array(24)].map((_, i) => {
-            const hour = i < 12 ? i || 12 : i - 12;
-            const ampm = i < 12 ? 'AM' : 'PM';
-            return (
-              <li key={i}>
-                {hour} {ampm}
-              </li>
-            );
-          })}
+          {renderHoursList()}
         </ul>
       )}
     </div>
