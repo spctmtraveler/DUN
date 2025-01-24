@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AiOutlineAim, AiOutlineUnorderedList, AiOutlineCheck, AiOutlineCalendar, AiOutlineBulb, AiOutlineHourglass } from 'react-icons/ai';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -11,8 +11,7 @@ const iconMap = {
   hourglass: AiOutlineHourglass
 };
 
-const Panel = ({ id, title, icon }) => {
-  const [isCollapsed, setIsCollapsed] = useState(id === 'priority');
+const Panel = ({ id, title, icon, isVisible, width }) => {
   const Icon = iconMap[icon];
 
   const renderHoursList = () => {
@@ -42,14 +41,11 @@ const Panel = ({ id, title, icon }) => {
   };
 
   return (
-    <div className={`panel ${isCollapsed ? 'collapsed' : ''}`}>
+    <div 
+      className={`panel ${!isVisible ? 'hidden' : ''}`}
+      style={{ width: isVisible ? width : '0' }}
+    >
       <div className="panel-header">
-        <button 
-          className="toggle-button" 
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
         <Icon className="panel-icon" size={24} />
         <h2 className="panel-title">{title}</h2>
       </div>

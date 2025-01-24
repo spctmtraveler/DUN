@@ -31,7 +31,9 @@ body {
   padding: 1rem;
   background-color: var(--background);
   border-bottom: 1px solid var(--foreground);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .banner h1 {
@@ -40,30 +42,89 @@ body {
   font-weight: bold;
 }
 
+.banner-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.task-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--foreground);
+  color: var(--foreground);
+  padding: 0.5rem;
+  border-radius: 4px;
+  min-width: 200px;
+}
+
+.add-button {
+  background: var(--accent);
+  color: var(--background);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.view-filter {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--foreground);
+  color: var(--foreground);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.toggle-switches {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-switch {
+  background: none;
+  border: none;
+  color: var(--foreground);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.toggle-switch:hover {
+  opacity: 0.8;
+}
+
+.toggle-switch.active {
+  color: var(--accent);
+  opacity: 1;
+}
+
 .panel-container {
   display: flex;
   flex: 1;
   width: 100%;
-  height: calc(100vh - 4rem); /* Subtract banner height */
+  height: calc(100vh - 4rem);
   overflow-x: auto;
   background-color: var(--background);
 }
 
 .panel {
-  flex: 1 0 auto;
-  width: clamp(560px, calc(100vw / 6), 100%);
   height: 100%;
   padding: 1rem;
   border-right: 1px solid var(--foreground);
   overflow-y: auto;
   background-color: var(--background);
-  transition: width 0.3s ease;
+  transition: all 0.3s ease;
+  min-width: 560px;
+  max-width: 100%;
 }
 
-.panel.collapsed {
-  flex: 0 0 auto;
-  width: 60px;
-  padding: 1rem 0.5rem;
+.panel.hidden {
+  width: 0 !important;
+  padding: 0;
+  margin: 0;
+  border: none;
+  opacity: 0;
+  overflow: hidden;
 }
 
 .panel:last-child {
@@ -73,48 +134,20 @@ body {
 .panel-header {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--foreground);
 }
 
-.collapsed .panel-header {
-  flex-direction: column;
-}
-
 .panel-title {
   color: var(--accent);
   font-size: 1.25rem;
   font-weight: 500;
-  white-space: nowrap;
-}
-
-.collapsed .panel-title {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
 }
 
 .panel-icon {
   color: var(--accent);
-}
-
-.toggle-button {
-  background: none;
-  border: none;
-  color: var(--accent);
-  cursor: pointer;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s ease;
-}
-
-.toggle-button:hover {
-  opacity: 0.8;
 }
 
 .hours-list {
@@ -178,7 +211,7 @@ body {
   transition: opacity 0.3s ease;
 }
 
-.collapsed .panel-content {
+.hidden .panel-content {
   opacity: 0;
   pointer-events: none;
 }
