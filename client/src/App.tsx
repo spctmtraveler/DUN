@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Home from "./pages/Home";
 import NotFound from "@/pages/not-found";
 import ThemeProvider from "./components/ThemeProvider";
+import DragDropProvider from "./components/DndProvider";
 import './styles/App.css';
 
 function Router() {
@@ -20,8 +21,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <Router />
-        <Toaster />
+        <DragDropProvider>
+          <Router />
+          <Toaster />
+        </DragDropProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

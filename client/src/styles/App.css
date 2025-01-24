@@ -219,3 +219,88 @@ body {
 .section-header:hover .section-caret {
   transform: rotate(90deg);
 }
+
+/* Add to existing CSS file */
+.task {
+  padding: 0.5rem;
+  background: var(--background);
+  border: 1px solid rgba(221, 221, 221, 0.1);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.task.dragging {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.task-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--foreground);
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+}
+
+.task-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--foreground);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.task-title {
+  flex: 1;
+  color: var(--foreground);
+}
+
+.task-controls {
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task:hover .task-controls {
+  opacity: 1;
+}
+
+.task-date,
+.task-delete {
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.task-date:hover,
+.task-delete:hover {
+  opacity: 1;
+}
+
+.task-delete {
+  color: #ff4444;
+}
+
+.drop-target {
+  background: rgba(0, 206, 247, 0.1);
+  border-radius: 4px;
+}
+
+.section-content {
+  padding: 0.5rem 0;
+  margin-left: 1.5rem;
+}
