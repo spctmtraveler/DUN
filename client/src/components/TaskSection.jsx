@@ -3,7 +3,16 @@ import { useDrop } from 'react-dnd';
 import { ChevronRight } from 'lucide-react';
 import Task from './Task';
 
-const TaskSection = ({ id, title, tasks = [], onMoveTask }) => {
+const TaskSection = ({ 
+  id, 
+  title, 
+  tasks = [], 
+  onMoveTask,
+  onToggleCompletion,
+  onDeleteTask,
+  onSelectTask,
+  selectedTaskId
+}) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const [{ isOver }, drop] = useDrop({
@@ -47,6 +56,10 @@ const TaskSection = ({ id, title, tasks = [], onMoveTask }) => {
               {...task}
               index={index}
               onMoveTask={onMoveTask}
+              onToggleCompletion={onToggleCompletion}
+              onDeleteTask={onDeleteTask}
+              onSelectTask={onSelectTask}
+              selected={task.id === selectedTaskId}
             />
           ))}
         </div>

@@ -9,6 +9,7 @@ const Home = () => {
   );
 
   const [tasks, setTasks] = useState([]);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   const togglePanel = (panelId) => {
     setVisiblePanels(prev => ({
@@ -61,10 +62,31 @@ const Home = () => {
 
       // Sort tasks by section and order
       return tasksCopy.sort((a, b) => {
-        if (a.section !== b.section) return a.section.localeCompare(b.section); //Added for section sorting
+        if (a.section !== b.section) return a.section.localeCompare(b.section);
         return a.order - b.order;
       });
     });
+  };
+
+  const toggleTaskCompletion = (taskId) => {
+    setTasks(prevTasks => 
+      prevTasks.map(task => 
+        task.id === taskId 
+          ? { ...task, completed: !task.completed }
+          : task
+      )
+    );
+  };
+
+  const deleteTask = (taskId) => {
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
+    }
+  };
+
+  const selectTask = (taskId) => {
+    setSelectedTaskId(taskId === selectedTaskId ? null : taskId);
   };
 
   return (
@@ -78,6 +100,10 @@ const Home = () => {
         visiblePanels={visiblePanels} 
         tasks={tasks}
         onMoveTask={moveTask}
+        onToggleCompletion={toggleTaskCompletion}
+        onDeleteTask={deleteTask}
+        onSelectTask={selectTask}
+        selectedTaskId={selectedTaskId}
       />
     </div>
   );

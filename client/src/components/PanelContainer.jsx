@@ -2,7 +2,15 @@ import React from 'react';
 import Panel from './Panel';
 import config from '../config.json';
 
-const PanelContainer = ({ visiblePanels, tasks, onMoveTask }) => {
+const PanelContainer = ({ 
+  visiblePanels, 
+  tasks, 
+  onMoveTask,
+  onToggleCompletion,
+  onDeleteTask,
+  onSelectTask,
+  selectedTaskId
+}) => {
   const visiblePanelCount = Object.values(visiblePanels).filter(Boolean).length;
   const panelWidth = visiblePanelCount > 0 ? `${100 / visiblePanelCount}%` : '0';
 
@@ -18,6 +26,10 @@ const PanelContainer = ({ visiblePanels, tasks, onMoveTask }) => {
           width={panelWidth}
           tasks={tasks}
           onMoveTask={onMoveTask}
+          onToggleCompletion={onToggleCompletion}
+          onDeleteTask={onDeleteTask}
+          onSelectTask={onSelectTask}
+          selectedTaskId={selectedTaskId}
         />
       ))}
     </div>

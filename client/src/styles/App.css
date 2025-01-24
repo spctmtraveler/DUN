@@ -321,3 +321,46 @@ body {
   background: rgba(0, 206, 247, 0.1);
   border-radius: 4px;
 }
+
+/* Add to existing CSS file */
+
+.task.selected {
+  border-color: var(--accent);
+  background: rgba(0, 206, 247, 0.05);
+}
+
+.task.completed .task-title {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--foreground);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.task-checkbox:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.task-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--background);
+  font-size: 12px;
+}
+
+.task-delete:hover {
+  color: #ff4444;
+  opacity: 1;
+}

@@ -12,7 +12,19 @@ const iconMap = {
   hourglass: AiOutlineHourglass
 };
 
-const Panel = ({ id, title, icon, isVisible, width, tasks = [], onMoveTask }) => {
+const Panel = ({ 
+  id, 
+  title, 
+  icon, 
+  isVisible, 
+  width, 
+  tasks = [], 
+  onMoveTask,
+  onToggleCompletion,
+  onDeleteTask,
+  onSelectTask,
+  selectedTaskId
+}) => {
   const Icon = iconMap[icon];
 
   const renderHoursList = () => {
@@ -40,6 +52,10 @@ const Panel = ({ id, title, icon, isVisible, width, tasks = [], onMoveTask }) =>
           title={section}
           tasks={sectionTasks}
           onMoveTask={onMoveTask}
+          onToggleCompletion={onToggleCompletion}
+          onDeleteTask={onDeleteTask}
+          onSelectTask={onSelectTask}
+          selectedTaskId={selectedTaskId}
         />
       );
     });
