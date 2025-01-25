@@ -22,17 +22,9 @@ const TaskSection = ({
         return;
       }
       
-      const targetIndex = tasks.length;
-      onMoveTask(item, id, targetIndex);
-      return { moved: true };
-    },
-    hover: (item, monitor) => {
-      if (!monitor.isOver({ shallow: true })) {
-        return;
-      }
-      
-      if (item.section === id) {
-        return;
+      if (item.section !== id) {
+        const targetIndex = tasks.length;
+        onMoveTask(item, id, targetIndex);
       }
     },
     collect: (monitor) => ({

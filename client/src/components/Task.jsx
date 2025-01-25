@@ -29,21 +29,14 @@ const Task = ({
 
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    hover: (draggedItem, monitor) => {
-      if (!monitor.isOver({ shallow: true })) return;
+    drop: (draggedItem, monitor) => {
       if (draggedItem.id === id) return;
       
-      const dragIndex = draggedItem.index;
-      const hoverIndex = index;
-      
-      if (draggedItem.section === section && dragIndex === hoverIndex) return;
-      
-      onMoveTask(draggedItem, section, hoverIndex);
-      draggedItem.index = hoverIndex;
-      draggedItem.section = section;
+      onMoveTask(draggedItem, section, index);
+      return { dropped: true };
     },
     collect: (monitor) => ({
-      isOver: monitor.isOver({ shallow: true }),
+      isOver: monitor.isOver(),
     }),
   });
 
