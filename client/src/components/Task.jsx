@@ -92,16 +92,14 @@ const Task = ({
                   mode="single"
                   selected={revisitDate ? parseISO(revisitDate) : undefined}
                   onSelect={(date) => {
-                    console.log('Date selected:', date);
                     if (date) {
                       const newDate = new Date(date);
-                      console.log('New date:', newDate);
                       newDate.setHours(0, 0, 0, 0);
                       onMoveTask(
-                        { id, title, section, index },
+                        { id, title, section, index, order },
                         section,
                         index,
-                        { revisitDate: newDate.toISOString(), order }
+                        { revisitDate: newDate.toISOString(), order: order || 0 }
                       );
                     }
                   }}
