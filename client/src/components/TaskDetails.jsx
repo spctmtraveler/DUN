@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, addDays } from 'date-fns';
 import { Calendar } from 'lucide-react';
 
 const TaskDetails = React.memo(({ task }) => {
@@ -17,8 +17,8 @@ const TaskDetails = React.memo(({ task }) => {
         title: task.title || '',
         overview: task.overview || '',
         details: task.details || '',
-        // Convert UTC date to local date for input
-        revisitDate: task.revisitDate ? format(parseISO(task.revisitDate), 'yyyy-MM-dd') : ''
+        // Add one day to the date when displaying from database
+        revisitDate: task.revisitDate ? format(addDays(parseISO(task.revisitDate), 1), 'yyyy-MM-dd') : ''
       });
     }
   }, [task]);
