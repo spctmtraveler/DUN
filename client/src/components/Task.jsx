@@ -73,53 +73,13 @@ const Task = ({
         <span className="task-title">{title}</span>
         <div className="task-controls">
           {revisitDate && (
-            <span 
-              className="task-date-label"
-              onClick={(e) => {
-                e.stopPropagation();
-                const target = e.currentTarget;
-                const rect = target.getBoundingClientRect();
-                console.log('Click position:', { 
-                  left: rect.left,
-                  top: rect.bottom,
-                  width: rect.width,
-                  height: rect.height
-                });
-                
-                const container = document.createElement('div');
-                container.style.position = 'fixed';
-                container.style.left = `${rect.left}px`;
-                container.style.top = `${rect.bottom + window.scrollY}px`;
-                container.style.zIndex = '9999';
-                
-                const input = document.createElement('input');
-                input.type = 'date';
-                input.style.opacity = '0';
-                input.style.position = 'absolute';
-                input.style.left = '0';
-                input.style.top = '0';
-                
-                container.appendChild(input);
-                document.body.appendChild(container);
-                
-                input.onchange = (e) => {
-                  const date = new Date(e.target.value);
-                  date.setHours(0, 0, 0, 0);
-                  onSelectTask(id);
-                  onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
-                  document.body.removeChild(container);
-                };
-                input.onclose = () => {
-                  if (input.parentNode) {
-                    input.parentNode.removeChild(input);
-                  }
-                };
-                input.showPicker();
-              }}
-            >
+            <span className="task-date-label">
               {formatDate(revisitDate)}
             </span>
           )}
+          <button className="task-date">
+            <Calendar size={16} />
+          </button>
           <button 
             className="task-delete"
             onClick={(e) => {

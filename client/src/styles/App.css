@@ -147,33 +147,6 @@ body {
 }
 
 .panel-header {
-
-.task-date-picker {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.task-date-input {
-  position: absolute;
-  opacity: 0;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-}
-
-.task-date-icon {
-  color: var(--foreground);
-  opacity: 0.5;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.task-date-icon:hover {
-  opacity: 1;
-  color: var(--accent);
-}
-
   display: flex;
   align-items: center;
   gap: 0.5rem;
