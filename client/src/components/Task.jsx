@@ -89,8 +89,8 @@ const Task = ({
                 const input = document.createElement('input');
                 input.type = 'date';
                 input.style.position = 'fixed';
-                input.style.left = `${rect.left}px`;
-                input.style.top = `${rect.bottom}px`;
+                input.style.left = `${rect.left + window.scrollX}px`;
+                input.style.top = `${rect.bottom + window.scrollY}px`;
                 input.style.opacity = '0';
                 input.style.pointerEvents = 'none';
                 document.body.appendChild(input);
