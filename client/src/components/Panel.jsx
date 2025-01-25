@@ -30,15 +30,34 @@ const Panel = ({
 
   const renderHoursList = () => {
     const hours = [];
-    for (let i = 8; i <= 22; i++) {
+    const currentHour = new Date().getHours();
+    
+    for (let i = 0; i < 24; i++) {
+      const displayHour = i === 0 || i === 12 ? 12 : i % 12;
+      const isPM = i >= 12;
       hours.push(
-        <li key={i} className="hour-item">
+        <li key={i} className={`hour-item ${isPM ? 'hour-pm' : 'hour-am'}`}>
           <div className="hour-line"></div>
-          <span className="hour-label">{i}</span>
+          <span className="hour-label">{displayHour}</span>
         </li>
       );
     }
-    return hours;
+
+    // Add ref to current hour for scrolling
+    const hourListRef = React.useRef(null);
+    React.useEffect(() => {
+      if (hourListRef.current) {
+        const hourHeight = hourListRef.current.scrollHeight / 24;
+        const scrollPosition = (currentHour * hourHeight) - (hourListRef.current.clientHeight / 2);
+        hourListRef.current.scrollTop = scrollPosition;
+      }
+    }, []);
+
+    return (
+      <ul className="hours-list" ref={hourListRef}>
+        {hours}
+      </ul>
+    );
   };
 
   const renderTaskSections = () => {
