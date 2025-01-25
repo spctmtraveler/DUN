@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Grip, Calendar, X } from 'lucide-react';
-import { format, isToday, isTomorrow, parseISO } from 'date-fns';
+import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
 
 const Task = ({ 
   id, 
