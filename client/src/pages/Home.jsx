@@ -131,7 +131,7 @@ const Home = () => {
     createTaskMutation.mutate(newTask);
   };
 
-  const moveTask = (draggedTask, targetSection, targetIndex) => {
+  const moveTask = (draggedTask, targetSection, targetIndex, additionalData = {}) => {
     const sectionTasks = tasks.filter(t => t.section === targetSection);
 
     let newOrder;
@@ -148,7 +148,8 @@ const Home = () => {
     updateTaskMutation.mutate({
       id: draggedTask.id,
       section: targetSection,
-      order: newOrder
+      order: newOrder,
+      ...additionalData
     });
   };
 

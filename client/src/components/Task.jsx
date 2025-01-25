@@ -100,7 +100,7 @@ const Task = ({
                         { id, title, section, index, order },
                         section,
                         index,
-                        { revisitDate: newDate.toISOString(), order }
+                        { revisitDate: newDate.toISOString() }
                       );
                     }
                   }}
