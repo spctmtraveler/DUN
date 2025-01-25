@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { startOfDay, endOfDay, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 import Banner from '../components/Banner';
 import PanelContainer from '../components/PanelContainer';
 import config from '../config.json';
@@ -9,12 +10,59 @@ const Home = () => {
     Object.fromEntries(config.panels.map(panel => [panel.id, true]))
   );
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all');
   const queryClient = useQueryClient();
 
   // Fetch tasks
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
   });
+
+  // Filter tasks based on the active filter
+  const getFilteredTasks = () => {
+    if (activeFilter === 'all') return tasks;
+    if (activeFilter === 'triage') return tasks.filter(task => task.section === 'Triage');
+
+    const today = new Date();
+    const intervals = {
+      today: {
+        start: startOfDay(today),
+        end: endOfDay(today)
+      },
+      tomorrow: {
+        start: startOfDay(addDays(today, 1)),
+        end: endOfDay(addDays(today, 1))
+      },
+      thisWeek: {
+        start: startOfWeek(today),
+        end: endOfWeek(today)
+      },
+      nextWeek: {
+        start: startOfWeek(addDays(today, 7)),
+        end: endOfWeek(addDays(today, 7))
+      },
+      thisMonth: {
+        start: startOfMonth(today),
+        end: endOfMonth(today)
+      },
+      nextMonth: {
+        start: startOfMonth(addDays(endOfMonth(today), 1)),
+        end: endOfMonth(addDays(endOfMonth(today), 1))
+      }
+    };
+
+    if (intervals[activeFilter]) {
+      return tasks.filter(task => {
+        if (!task.revisitDate) return false;
+        const taskDate = parseISO(task.revisitDate);
+        return isWithinInterval(taskDate, intervals[activeFilter]);
+      });
+    }
+
+    return tasks;
+  };
+
+  const filteredTasks = getFilteredTasks();
 
   // Create task mutation
   const createTaskMutation = useMutation({
@@ -125,16 +173,21 @@ const Home = () => {
     setSelectedTaskId(taskId === selectedTaskId ? null : taskId);
   };
 
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+  };
+
   return (
     <div className="app-container">
       <Banner 
         visiblePanels={visiblePanels} 
         togglePanel={togglePanel} 
         onAddTask={handleAddTask}
+        onFilterChange={handleFilterChange}
       />
       <PanelContainer 
         visiblePanels={visiblePanels} 
-        tasks={tasks}
+        tasks={filteredTasks}
         onMoveTask={moveTask}
         onToggleCompletion={toggleTaskCompletion}
         onDeleteTask={deleteTask}

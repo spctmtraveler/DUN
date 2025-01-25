@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ToggleSwitches from './ToggleSwitches';
 
-const Banner = ({ visiblePanels, togglePanel, onAddTask }) => {
+const Banner = ({ visiblePanels, togglePanel, onAddTask, onFilterChange }) => {
   const [taskInput, setTaskInput] = useState('');
 
   const handleKeyDown = (e) => {
@@ -10,6 +10,17 @@ const Banner = ({ visiblePanels, togglePanel, onAddTask }) => {
       setTaskInput('');
     }
   };
+
+  const filterOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'triage', label: 'Triage' },
+    { value: 'today', label: "Today's tasks" },
+    { value: 'tomorrow', label: "Tomorrow's tasks" },
+    { value: 'thisWeek', label: "This week's tasks" },
+    { value: 'nextWeek', label: "Next week's tasks" },
+    { value: 'thisMonth', label: "This month's tasks" },
+    { value: 'nextMonth', label: "Next month's tasks" }
+  ];
 
   return (
     <div className="banner">
@@ -34,8 +45,16 @@ const Banner = ({ visiblePanels, togglePanel, onAddTask }) => {
         >
           Add
         </button>
-        <select className="view-filter">
-          <option value="all">All</option>
+        <select 
+          className="view-filter"
+          onChange={(e) => onFilterChange(e.target.value)}
+          defaultValue="all"
+        >
+          {filterOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
         <ToggleSwitches visiblePanels={visiblePanels} togglePanel={togglePanel} />
       </div>
