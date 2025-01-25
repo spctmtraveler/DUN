@@ -87,9 +87,10 @@ const Task = ({
                 });
                 
                 const container = document.createElement('div');
-                container.style.position = 'absolute';
-                container.style.left = `${e.clientX}px`;
-                container.style.top = `${e.clientY}px`;
+                container.style.position = 'fixed';
+                const rect = target.getBoundingClientRect();
+                container.style.left = `${rect.left}px`;
+                container.style.top = `${rect.bottom + window.scrollY}px`;
                 container.style.zIndex = '9999';
                 
                 const input = document.createElement('input');
