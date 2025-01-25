@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrag } from 'react-dnd';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -19,7 +19,7 @@ const Task = ({
   onDeleteTask,
   onSelectTask 
 }) => {
-  const [{ isDragging }, drag, preview] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: 'TASK',
     item: { id, title, section, index, order, revisitDate },
     collect: (monitor) => ({
@@ -27,26 +27,7 @@ const Task = ({
     }),
   });
 
-  const [{ isOver }, drop] = useDrop({
-    accept: 'TASK',
-    drop: (draggedItem) => {
-      if (draggedItem.id === id) return;
-
-      const additionalData = draggedItem.revisitDate ? { revisitDate: draggedItem.revisitDate } : {};
-      onMoveTask(draggedItem, section, index, additionalData);
-    },
-    hover(item, monitor) {
-      if (!monitor.isOver({ shallow: true })) return;
-      if (item.id === id) return;
-      if (item.index === index && item.section === section) return;
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
-
   const handleClick = (e) => {
-    // Only select if not clicking a control
     if (!e.target.closest('.task-controls, .task-checkbox')) {
       onSelectTask(id);
     }
@@ -62,12 +43,12 @@ const Task = ({
 
   return (
     <div
-      ref={(node) => drop(preview(node))}
-      className={`task ${isDragging ? 'dragging' : ''} ${isOver ? 'drop-target' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
+      ref={drag}
+      className={`task ${isDragging ? 'dragging' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
       onClick={handleClick}
     >
       <div className="task-content">
-        <div ref={drag} className="drag-handle">
+        <div className="drag-handle">
           <Grip size={16} />
         </div>
         <input 
