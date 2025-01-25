@@ -77,7 +77,7 @@ const Task = ({
               {formatDate(revisitDate)}
             </span>
           )}
-          <div className="date-input-wrapper" style={{display: 'inline-flex', padding: '0.25rem'}}>
+          <div className="task-date-picker">
             <input
               type="date"
               value={revisitDate ? format(addDays(parseISO(revisitDate), 1), 'yyyy-MM-dd') : ''}
@@ -87,11 +87,13 @@ const Task = ({
                 onSelectTask(id);
                 onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
               }}
-              className="task-date date-input"
-              style={{width: '0', padding: '0'}}
+              className="task-date-input"
               onClick={(e) => e.stopPropagation()}
             />
-            <Calendar size={16} style={{cursor: 'pointer'}} />
+            <Calendar size={16} className="task-date-icon" onClick={(e) => {
+              e.stopPropagation();
+              e.target.parentElement.querySelector('input').showPicker();
+            }} />
           </div>
           <button 
             className="task-delete"
