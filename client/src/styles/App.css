@@ -42,19 +42,21 @@ body {
   font-weight: bold;
 }
 
+/* Banner controls section */
 .banner-controls {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem; /* Increased gap between banner elements */
+  margin-right: 1rem; /* Add right margin */
 }
 
 .task-input {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--foreground);
   color: var(--foreground);
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  min-width: 200px;
+  min-width: 300px;
 }
 
 .add-button {
@@ -74,9 +76,11 @@ body {
   border-radius: 4px;
 }
 
+/* Toggle switches container */
 .toggle-switches {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem; /* Increased gap between toggle buttons */
+  margin-left: 0.5rem;
 }
 
 .toggle-switch {
@@ -85,17 +89,23 @@ body {
   color: var(--foreground);
   opacity: 0.5;
   cursor: pointer;
-  padding: 0.25rem;
-  transition: all 0.3s ease;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toggle-switch:hover {
   opacity: 0.8;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .toggle-switch.active {
   color: var(--accent);
   opacity: 1;
+  background: rgba(0, 206, 247, 0.1);
 }
 
 .panel-container {
@@ -115,22 +125,23 @@ body {
   overflow-y: auto;
   background-color: var(--background);
   min-width: 300px;
-  max-width: 100%;
-  transition: all 0.3s ease, width 0.3s ease-in-out, padding 0.3s ease-in-out, margin 0.3s ease-in-out;
+  max-width: 560px;
+  transition: all 0.3s ease-in-out;
   opacity: 1;
+  visibility: visible;
 }
 
 .panel.hidden {
   min-width: 0;
-  width: 0;
+  width: 0 !important;
   padding: 0;
   margin: 0;
   border: none;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 
-/* Keep other styles unchanged */
 .panel:last-child {
   border-right: none;
 }
@@ -322,7 +333,6 @@ body {
   border-radius: 4px;
 }
 
-/* Add to existing CSS file */
 .task.selected {
   border-color: var(--accent);
   background: rgba(0, 206, 247, 0.05);
@@ -364,7 +374,6 @@ body {
   opacity: 1;
 }
 
-/* Add to existing CSS */
 .task-details {
   padding: 1rem;
   color: var(--foreground);
