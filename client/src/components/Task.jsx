@@ -2,6 +2,8 @@ import React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 const Task = ({ 
   id, 
@@ -72,74 +74,31 @@ const Task = ({
         />
         <span className="task-title">{title}</span>
         <div className="task-controls">
-          <button 
-            className="task-date-label" 
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('Opening date picker for task:', id);
-              
-              // Clean up any existing date pickers
-              const existingPickers = document.querySelectorAll('.task-date-picker');
-              existingPickers.forEach(picker => {
-                console.log('Removing existing picker');
-                picker.remove();
-              });
-              
-              const target = e.currentTarget;
-              const rect = target.getBoundingClientRect();
-              
-              const container = document.createElement('div');
-              container.className = 'task-date-picker';
-              container.style.position = 'absolute';
-              container.style.zIndex = '9999';
-              target.appendChild(container);
-              
-              const input = document.createElement('input');
-              input.type = 'date';
-              input.style.position = 'absolute';
-              input.style.left = '0';
-              input.style.top = '100%';
-              input.style.opacity = '0';
-              input.style.pointerEvents = 'none';
-              
-              container.appendChild(input);
-              console.log('Added date picker to task:', id);
-              
-              input.showPicker();
-              
-              const cleanup = () => {
-                console.log('Cleaning up date picker for task:', id);
-                if (container.parentNode) {
-                  container.parentNode.removeChild(container);
-                }
-              };
-              
-              input.onchange = (e) => {
-                const date = new Date(e.target.value);
-                date.setHours(0, 0, 0, 0);
-                console.log('Date selected:', date, 'for task:', id);
-                onSelectTask(id);
-                onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
-                cleanup();
-              };
-              
-              input.oncancel = cleanup;
-              
-              // Cleanup if clicked outside
-              const outsideClickHandler = (e) => {
-                if (!container.contains(e.target)) {
-                  cleanup();
-                  document.removeEventListener('click', outsideClickHandler);
-                }
-              };
-              
-              setTimeout(() => {
-                document.addEventListener('click', outsideClickHandler);
-              }, 100);
-            }}
-          >
-            {formatDate(revisitDate) || 'Set date'}
-          </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button 
+                className="task-date-label"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {formatDate(revisitDate) || 'Set date'}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()}>
+              <Calendar
+                mode="single"
+                selected={revisitDate ? parseISO(revisitDate) : undefined}
+                onSelect={(date) => {
+                  if (date) {
+                    const newDate = addDays(date, 1);
+                    newDate.setHours(0, 0, 0, 0);
+                    onSelectTask(id);
+                    onMoveTask({ id, title, section, index }, section, index, { revisitDate: newDate.toISOString() });
+                  }
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           <button 
             className="task-delete"
             onClick={(e) => {
