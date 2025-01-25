@@ -18,14 +18,21 @@ const TaskSection = ({
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
     drop: (item, monitor) => {
-      const didDrop = monitor.didDrop();
-      if (didDrop) {
+      if (monitor.didDrop()) {
         return;
       }
-
-      if (item.section !== id) {
-        const targetIndex = tasks.length;
-        onMoveTask(item, id, targetIndex);
+      
+      const targetIndex = tasks.length;
+      onMoveTask(item, id, targetIndex);
+      return { moved: true };
+    },
+    hover: (item, monitor) => {
+      if (!monitor.isOver({ shallow: true })) {
+        return;
+      }
+      
+      if (item.section === id) {
+        return;
       }
     },
     collect: (monitor) => ({
