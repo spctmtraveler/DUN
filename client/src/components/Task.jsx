@@ -91,10 +91,18 @@ const Task = ({
                 mode="single"
                 selected={revisitDate ? parseISO(revisitDate) : undefined}
                 onSelect={(date) => {
+                  console.log('Date selected:', date);
                   if (date) {
-                    date.setHours(0, 0, 0, 0);
+                    const newDate = new Date(date);
+                    console.log('New date:', newDate);
+                    newDate.setHours(0, 0, 0, 0);
                     onSelectTask(id);
-                    onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
+                    onMoveTask(
+                      { id, title, section, index },
+                      section,
+                      index,
+                      { revisitDate: newDate.toISOString(), order: order }
+                    );
                   }
                 }}
                 initialFocus
