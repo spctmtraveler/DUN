@@ -41,23 +41,21 @@ export function registerRoutes(app: Express): Server {
       // Create an update object only with the fields that are present in the request
       const updateData: Partial<InsertTask> = {};
 
-      // Only include fields that are actually present in the request body
-      if (req.body.title !== undefined) updateData.title = req.body.title;
-      if (req.body.section !== undefined) updateData.section = req.body.section;
-      if (req.body.completed !== undefined) updateData.completed = req.body.completed;
-      if (req.body.order !== undefined) updateData.order = req.body.order;
-      if (req.body.overview !== undefined) updateData.overview = req.body.overview;
-      if (req.body.details !== undefined) updateData.details = req.body.details;
+      const [existingTask] = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.id, parseInt(id)));
+
+      if (!existingTask) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+
+      // Keep existing values if not provided in update
+      updateData.order = req.body.order ?? existingTask.order;
+      updateData.overview = req.body.overview ?? existingTask.overview;
+      updateData.details = req.body.details ?? existingTask.details;
       if (req.body.revisitDate !== undefined) {
         updateData.revisitDate = new Date(req.body.revisitDate);
-        // If order is not provided when setting revisitDate, keep the existing order
-        if (req.body.order === undefined) {
-          const [existingTask] = await db
-            .select({ order: tasks.order })
-            .from(tasks)
-            .where(eq(tasks.id, parseInt(id)));
-          updateData.order = existingTask.order;
-        }
       }
 
       // Always update the updatedAt timestamp
