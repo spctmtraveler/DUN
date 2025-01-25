@@ -45,19 +45,29 @@ const TaskDetails = React.memo(({ task }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Update local state immediately
+    if (name === 'revisitDate' && value) {
+      const date = new Date(value);
+      date.setHours(12, 0, 0, 0);
+      date.setDate(date.getDate() + 1);
+      setFormData(prev => ({
+        ...prev,
+        [name]: format(date, 'yyyy-MM-dd')
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
 
     // Only send update if we have a task
     if (task) {
       let updateValue = value;
-      // For dates, create a Date object at noon to avoid timezone issues
       if (name === 'revisitDate' && value) {
         const date = new Date(value);
         date.setHours(12, 0, 0, 0);
-        // Add one day to compensate for timezone offset
         date.setDate(date.getDate() + 1);
         updateValue = date.toISOString();
       }
@@ -66,6 +76,17 @@ const TaskDetails = React.memo(({ task }) => {
         id: task.id,
         field: name,
         value: updateValue
+      }, {
+        // Optimistic update
+        onMutate: () => {
+          queryClient.setQueryData(['/api/tasks'], (oldData) => {
+            return oldData.map(t => 
+              t.id === task.id 
+                ? { ...t, [name]: updateValue }
+                : t
+            );
+          });
+        }
       });
     }
   };
