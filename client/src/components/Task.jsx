@@ -74,31 +74,38 @@ const Task = ({
         />
         <span className="task-title">{title}</span>
         <div className="task-controls">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button 
-                className="task-date-label"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {formatDate(revisitDate) || 'Set date'}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()}>
-              <Calendar
-                mode="single"
-                selected={revisitDate ? parseISO(revisitDate) : undefined}
-                onSelect={(date) => {
-                  if (date) {
-                    const newDate = addDays(date, 1);
-                    newDate.setHours(0, 0, 0, 0);
-                    onSelectTask(id);
-                    onMoveTask({ id, title, section, index }, section, index, { revisitDate: newDate.toISOString() });
-                  }
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <button 
+            className="task-date-label"
+            onClick={(e) => {
+              e.stopPropagation();
+              const input = document.createElement('input');
+              input.type = 'date';
+              input.value = revisitDate ? format(parseISO(revisitDate), 'yyyy-MM-dd') : '';
+              
+              input.onchange = (e) => {
+                const date = new Date(e.target.value);
+                date.setHours(0, 0, 0, 0);
+                onSelectTask(id);
+                onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
+              };
+              
+              input.style.position = 'absolute';
+              input.style.opacity = '0';
+              input.style.pointerEvents = 'none';
+              document.body.appendChild(input);
+              input.showPicker();
+              
+              input.addEventListener('cancel', () => {
+                document.body.removeChild(input);
+              }, { once: true });
+              
+              input.addEventListener('change', () => {
+                document.body.removeChild(input);
+              }, { once: true });
+            }}
+          >
+            {formatDate(revisitDate) || 'Set date'}
+          </button>
           <button 
             className="task-delete"
             onClick={(e) => {
