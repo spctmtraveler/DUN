@@ -445,6 +445,7 @@ body {
   background: none;
   border: none;
   padding: 0;
+  resize: none;
 }
 
 .date-input::-webkit-calendar-picker-indicator {
