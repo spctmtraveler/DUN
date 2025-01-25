@@ -21,7 +21,7 @@ const Task = ({
 }) => {
   const [{ isDragging }, drag, preview] = useDrag({
     type: 'TASK',
-    item: { id, title, section, index, order },
+    item: { id, title, section, index, order, revisitDate },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -31,9 +31,10 @@ const Task = ({
     accept: 'TASK',
     drop: (draggedItem, monitor) => {
       if (draggedItem.id === id) return;
-      
-      onMoveTask(draggedItem, section, index);
-      return { dropped: true };
+
+      // Preserve the dragged item's revisitDate when moving
+      const additionalData = draggedItem.revisitDate ? { revisitDate: draggedItem.revisitDate } : {};
+      onMoveTask(draggedItem, section, index, additionalData);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
