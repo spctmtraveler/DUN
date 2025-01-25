@@ -4,6 +4,7 @@ import { startOfDay, endOfDay, addDays, startOfWeek, endOfWeek, startOfMonth, en
 import Banner from '../components/Banner';
 import PanelContainer from '../components/PanelContainer';
 import config from '../config.json';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const Home = () => {
   const [visiblePanels, setVisiblePanels] = useState(
@@ -12,6 +13,9 @@ const Home = () => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
   const queryClient = useQueryClient();
+
+  // Enable WebSocket connection for real-time updates
+  useWebSocket();
 
   // Fetch tasks
   const { data: tasks = [] } = useQuery({
