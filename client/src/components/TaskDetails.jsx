@@ -57,6 +57,8 @@ const TaskDetails = React.memo(({ task }) => {
       if (name === 'revisitDate' && value) {
         const date = new Date(value);
         date.setHours(12, 0, 0, 0);
+        // Subtract one day to compensate for timezone offset
+        date.setDate(date.getDate() - 1);
         updateValue = date.toISOString();
       }
 
