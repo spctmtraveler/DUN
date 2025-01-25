@@ -1,5 +1,5 @@
-import React from 'react';
-import { useDrag } from 'react-dnd';
+import React, { useRef } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -18,20 +18,66 @@ const Task = ({
   onDeleteTask,
   onSelectTask 
 }) => {
-  // Single responsibility: handle dragging this task
+  const ref = useRef(null);
+
   const [{ isDragging }, drag] = useDrag({
     type: 'TASK',
-    item: () => ({
-      id,
-      title,
-      section,
-      index,
-      revisitDate
-    }),
+    item: () => {
+      console.debug('DnD: Starting drag', { id, title, section, index });
+      return {
+        id,
+        title,
+        section,
+        index,
+        revisitDate
+      };
+    },
+    end: (item, monitor) => {
+      console.debug('DnD: Ending drag', { 
+        item, 
+        dropResult: monitor.getDropResult(),
+        didDrop: monitor.didDrop()
+      });
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
     })
   });
+
+  const [{ handlerId, isOver }, drop] = useDrop({
+    accept: 'TASK',
+    hover(item, monitor) {
+      if (!ref.current) return;
+
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex && item.section === section) {
+        return;
+      }
+
+      console.debug('DnD: Task hover', {
+        dragTask: { id: item.id, index: dragIndex, section: item.section },
+        hoverTask: { id, index: hoverIndex, section }
+      });
+
+      onMoveTask(item, section, hoverIndex, {
+        revisitDate: item.revisitDate
+      });
+
+      item.index = hoverIndex;
+      item.section = section;
+    },
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+        isOver: monitor.isOver()
+      }
+    }
+  });
+
+  drag(drop(ref));
 
   const handleClick = (e) => {
     if (!e.target.closest('.task-controls, .task-checkbox')) {
@@ -49,10 +95,13 @@ const Task = ({
 
   return (
     <div 
-      ref={drag}
-      className={`task ${isDragging ? 'dragging' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
+      ref={ref}
+      className={`task ${isDragging ? 'dragging' : ''} ${isOver ? 'drop-target' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
       onClick={handleClick}
-      style={{ opacity: isDragging ? 0.5 : 1 }}
+      data-handler-id={handlerId}
+      data-task-id={id}
+      data-section={section}
+      data-index={index}
     >
       <div className="task-content">
         <div className="drag-handle">

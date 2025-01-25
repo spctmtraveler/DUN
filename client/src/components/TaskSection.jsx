@@ -15,30 +15,54 @@ const TaskSection = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver, canDrop }, drop] = useDrop({
     accept: 'TASK',
-    hover: (item) => {
-      if (item.section === id) return;
-
-      // When dragging to a new section, move to the end
-      const newIndex = tasks.length;
-      onMoveTask(item, id, newIndex, {
-        revisitDate: item.revisitDate
+    hover: (item, monitor) => {
+      console.debug('DnD: Section hover', {
+        draggedTask: item,
+        targetSection: id,
+        isOverSection: monitor.isOver({ shallow: true })
       });
 
-      // Update the dragged item's position
-      item.index = newIndex;
-      item.section = id;
+      // Only handle section-level hover when the task isn't over a specific task
+      if (monitor.isOver({ shallow: true })) {
+        if (item.section === id) return;
+
+        console.debug('DnD: Moving to end of section', {
+          from: item.section,
+          to: id,
+          newIndex: tasks.length
+        });
+
+        onMoveTask(item, id, tasks.length, {
+          revisitDate: item.revisitDate
+        });
+
+        item.index = tasks.length;
+        item.section = id;
+      }
+    },
+    drop: (item, monitor) => {
+      // Only handle drops that weren't handled by a nested target
+      if (!monitor.didDrop()) {
+        console.debug('DnD: Section drop', {
+          task: item,
+          targetSection: id,
+          finalIndex: tasks.length
+        });
+      }
     },
     collect: monitor => ({
-      isOver: monitor.isOver()
+      isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop(),
     })
   });
 
   return (
     <div 
       ref={drop}
-      className={`task-section ${isOver ? 'drop-target' : ''}`}
+      className={`task-section ${isOver && canDrop ? 'drop-target' : ''}`}
+      data-section-id={id}
     >
       <div 
         className="section-header"

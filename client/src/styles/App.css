@@ -276,15 +276,39 @@ body {
   position: relative;
 }
 
+.task::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: all 0.2s ease;
+  top: -1px;
+  transform: scaleX(0);
+}
+
+.task.drop-target::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
 .task.dragging {
   opacity: 0.4;
   background: rgba(0, 206, 247, 0.05);
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Add gap animation when task is potential drop target */
 .task.drop-target {
-  border: 1px dashed var(--accent);
-  background: rgba(0, 206, 247, 0.1);
-  transform: translateY(2px);
+  transform: translateY(1rem);
+  margin-top: 1rem;
+}
+
+.task.drop-target + .task {
+  transform: translateY(1rem);
 }
 
 .task-section.drop-target {
