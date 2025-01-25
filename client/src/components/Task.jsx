@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Grip, Calendar, X } from 'lucide-react';
+import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 
 const Task = ({ 
   id, 
@@ -10,6 +11,7 @@ const Task = ({
   order, 
   completed,
   selected,
+  revisitDate,
   onMoveTask,
   onToggleCompletion,
   onDeleteTask,
@@ -43,6 +45,14 @@ const Task = ({
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = parseISO(dateString);
+    if (isToday(date)) return 'Today';
+    if (isTomorrow(date)) return 'Tomorrow';
+    return format(date, 'MM/dd');
+  };
+
   return (
     <div
       ref={(node) => drop(preview(node))}
@@ -62,6 +72,11 @@ const Task = ({
         />
         <span className="task-title">{title}</span>
         <div className="task-controls">
+          {revisitDate && (
+            <span className="task-date-label">
+              {formatDate(revisitDate)}
+            </span>
+          )}
           <button className="task-date">
             <Calendar size={16} />
           </button>
