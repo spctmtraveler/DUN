@@ -14,37 +14,27 @@ const TaskSection = ({
   selectedTaskId
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [{ isOver, canDrop }, drop] = useDrop({
+
+  const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
     drop: (draggedItem) => {
-      if (draggedItem.section === id && tasks.length === 0) {
-        // If dropping in the same empty section, don't do anything
-        return;
+      if (draggedItem.section === id && draggedItem.index === tasks.length - 1) {
+        return; // Don't drop if already at the end of the same section
       }
 
-      let targetIndex;
-      if (draggedItem.section === id) {
-        // When moving within the same section
-        targetIndex = tasks.length <= 1 ? 0 : tasks.length - 1;
-      } else {
-        // When moving to a different section
-        targetIndex = tasks.length;
-      }
-
+      const targetIndex = tasks.length;
       const additionalData = draggedItem.revisitDate ? { revisitDate: draggedItem.revisitDate } : {};
       onMoveTask(draggedItem, id, targetIndex, additionalData);
     },
-    canDrop: (item) => true,
     collect: (monitor) => ({
       isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
     }),
   });
 
   return (
     <div 
       ref={drop}
-      className={`task-section ${isOver && canDrop ? 'drop-target' : ''}`}
+      className={`task-section ${isOver ? 'drop-target' : ''}`}
     >
       <div 
         className="section-header"

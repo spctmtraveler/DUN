@@ -43,11 +43,11 @@ const Task = ({
 
   return (
     <div
-      ref={drag}
       className={`task ${isDragging ? 'dragging' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
       onClick={handleClick}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
     >
-      <div className="task-content">
+      <div className="task-content" ref={drag}>
         <div className="drag-handle">
           <Grip size={16} />
         </div>
