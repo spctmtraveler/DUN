@@ -45,7 +45,7 @@ const TaskDetails = React.memo(({ task }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Update local state immediately
     if (name === 'revisitDate' && value) {
       const date = new Date(value);
@@ -68,7 +68,6 @@ const TaskDetails = React.memo(({ task }) => {
       if (name === 'revisitDate' && value) {
         const date = new Date(value);
         date.setHours(12, 0, 0, 0);
-        date.setDate(date.getDate() + 1);
         updateValue = date.toISOString();
       }
 
