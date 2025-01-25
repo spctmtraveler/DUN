@@ -73,7 +73,7 @@ const Task = ({
         <span className="task-title">{title}</span>
         <div className="task-controls">
           {revisitDate && (
-            <div 
+            <span 
               className="task-date-label"
               onClick={(e) => {
                 e.stopPropagation();
@@ -83,10 +83,12 @@ const Task = ({
                 input.style.position = 'fixed';
                 input.style.left = `${rect.left}px`;
                 input.style.top = `${rect.bottom + 2}px`;
+                input.style.opacity = '0';
+                input.style.pointerEvents = 'none';
                 document.body.appendChild(input);
                 input.onchange = (e) => {
                   const date = new Date(e.target.value);
-                  date.setHours(12, 0, 0, 0);
+                  date.setHours(0, 0, 0, 0);
                   onSelectTask(id);
                   onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
                   document.body.removeChild(input);
