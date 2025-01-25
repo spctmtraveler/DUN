@@ -29,12 +29,16 @@ const Task = ({
 
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    drop: (draggedItem, monitor) => {
+    drop: (draggedItem) => {
       if (draggedItem.id === id) return;
 
-      // Preserve the dragged item's revisitDate when moving
       const additionalData = draggedItem.revisitDate ? { revisitDate: draggedItem.revisitDate } : {};
       onMoveTask(draggedItem, section, index, additionalData);
+    },
+    hover(item, monitor) {
+      if (!monitor.isOver({ shallow: true })) return;
+      if (item.id === id) return;
+      if (item.index === index && item.section === section) return;
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -60,7 +64,6 @@ const Task = ({
     <div
       ref={(node) => drop(preview(node))}
       className={`task ${isDragging ? 'dragging' : ''} ${isOver ? 'drop-target' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
-      style={{ opacity: isDragging ? 0.5 : 1 }}
       onClick={handleClick}
     >
       <div className="task-content">

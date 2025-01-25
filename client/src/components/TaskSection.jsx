@@ -17,14 +17,11 @@ const TaskSection = ({
 
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    drop: (item, monitor) => {
-      if (monitor.didDrop()) {
-        return;
-      }
-      
-      if (item.section !== id) {
-        const targetIndex = tasks.length;
-        onMoveTask(item, id, targetIndex);
+    drop: (draggedItem) => {
+      const targetIndex = tasks.length;
+      if (draggedItem.section !== id) {
+        const additionalData = draggedItem.revisitDate ? { revisitDate: draggedItem.revisitDate } : {};
+        onMoveTask(draggedItem, id, targetIndex, additionalData);
       }
     },
     collect: (monitor) => ({
