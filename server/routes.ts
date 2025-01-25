@@ -48,7 +48,17 @@ export function registerRoutes(app: Express): Server {
       if (req.body.order !== undefined) updateData.order = req.body.order;
       if (req.body.overview !== undefined) updateData.overview = req.body.overview;
       if (req.body.details !== undefined) updateData.details = req.body.details;
-      if (req.body.revisitDate !== undefined) updateData.revisitDate = new Date(req.body.revisitDate);
+      if (req.body.revisitDate !== undefined) {
+        updateData.revisitDate = new Date(req.body.revisitDate);
+        // If order is not provided when setting revisitDate, keep the existing order
+        if (req.body.order === undefined) {
+          const [existingTask] = await db
+            .select({ order: tasks.order })
+            .from(tasks)
+            .where(eq(tasks.id, parseInt(id)));
+          updateData.order = existingTask.order;
+        }
+      }
 
       // Always update the updatedAt timestamp
       updateData.updatedAt = new Date();

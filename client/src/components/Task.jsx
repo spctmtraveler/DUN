@@ -99,7 +99,7 @@ const Task = ({
                         { id, title, section, index, order },
                         section,
                         index,
-                        { revisitDate: newDate.toISOString(), order: order || 0 }
+                        { revisitDate: newDate.toISOString(), order }
                       );
                     }
                   }}
