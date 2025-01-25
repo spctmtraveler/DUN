@@ -73,28 +73,24 @@ const Task = ({
         <span className="task-title">{title}</span>
         <div className="task-controls">
           {revisitDate && (
-            <span className="task-date-label">
-              {formatDate(revisitDate)}
-            </span>
-          )}
-          <div className="task-date-picker">
-            <input
-              type="date"
-              value={revisitDate ? format(addDays(parseISO(revisitDate), 1), 'yyyy-MM-dd') : ''}
-              onChange={(e) => {
-                const date = new Date(e.target.value);
-                date.setHours(12, 0, 0, 0);
-                onSelectTask(id);
-                onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
+            <div 
+              className="task-date-label"
+              onClick={(e) => {
+                e.stopPropagation();
+                const input = document.createElement('input');
+                input.type = 'date';
+                input.onchange = (e) => {
+                  const date = new Date(e.target.value);
+                  date.setHours(12, 0, 0, 0);
+                  onSelectTask(id);
+                  onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
+                };
+                input.showPicker();
               }}
-              className="task-date-input"
-              onClick={(e) => e.stopPropagation()}
-            />
-            <Calendar size={16} className="task-date-icon" onClick={(e) => {
-              e.stopPropagation();
-              e.target.parentElement.querySelector('input').showPicker();
-            }} />
-          </div>
+            >
+              {formatDate(revisitDate)}
+            </div>
+          )}
           <button 
             className="task-delete"
             onClick={(e) => {
