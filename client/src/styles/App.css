@@ -120,15 +120,27 @@ body {
 /* Panel styles */
 .panel {
   height: 100%;
-  padding: 1rem;
   border-right: 1px solid var(--foreground);
-  overflow-y: auto;
   background-color: var(--background);
   min-width: 300px;
   max-width: 560px;
   transition: all 0.3s ease-in-out;
   opacity: 1;
   visibility: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 1rem;
+  background-color: var(--background);
+  flex-shrink: 0;
+}
+
+.panel-content {
+  padding: 0 1rem 1rem 1rem;
+  overflow-y: auto;
+  flex-grow: 1;
 }
 
 .panel.hidden {
