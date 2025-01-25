@@ -98,7 +98,7 @@ const Task = ({
               }}
             >
               {formatDate(revisitDate)}
-            </div>
+            </span>
           )}
           <button 
             className="task-delete"
