@@ -49,7 +49,7 @@ const Task = ({
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = addDays(parseISO(dateString), 1);
+    const date = parseISO(dateString);
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
     return format(date, 'MM/dd');
@@ -90,11 +90,11 @@ const Task = ({
               <div onClick={(e) => e.stopPropagation()}>
                 <CalendarComponent
                   mode="single"
-                  selected={revisitDate ? new Date(revisitDate) : undefined}
+                  selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
                   onSelect={(date) => {
                     if (date) {
                       const newDate = new Date(date);
-                      newDate.setDate(newDate.getDate() - 1); // Adjust for timezone
+                      newDate.setDate(newDate.getDate() - 1); 
                       newDate.setHours(12, 0, 0, 0);
                       onMoveTask(
                         { id, title, section, index, order },
