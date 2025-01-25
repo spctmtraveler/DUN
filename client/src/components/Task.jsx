@@ -109,7 +109,6 @@ const Task = ({
             >
               <Calendar size={14} />
             </button>
-          </div>
           <button 
             className="task-delete"
             onClick={(e) => {
