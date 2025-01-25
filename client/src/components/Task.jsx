@@ -74,13 +74,12 @@ const Task = ({
         />
         <span className="task-title">{title}</span>
         <div className="task-controls">
-          <div className="date-input-wrapper">
-            <span className="task-date-label">
-              {formatDate(revisitDate) || 'Set date'}
-            </span>
-            <button 
-              className="task-date"
-              onClick={(e) => {
+          <span className="task-date-label">
+            {formatDate(revisitDate) || 'Set date'}
+          </span>
+          <button 
+            className="task-date"
+            onClick={(e) => {
                 e.stopPropagation();
                 const input = document.createElement('input');
                 input.type = 'date';
