@@ -72,13 +72,38 @@ const Task = ({
         />
         <span className="task-title">{title}</span>
         <div className="task-controls">
-          {revisitDate && (
-            <span className="task-date-label">
-              {formatDate(revisitDate)}
-            </span>
-          )}
-          <button className="task-date">
-            <Calendar size={16} />
+          <button 
+            className="task-date-label" 
+            onClick={(e) => {
+              e.stopPropagation();
+              const target = e.currentTarget;
+              const rect = target.getBoundingClientRect();
+              const input = document.createElement('input');
+              input.type = 'date';
+              input.style.position = 'fixed';
+              input.style.left = `${rect.right}px`;
+              input.style.top = `${rect.top}px`;
+              input.style.opacity = '0';
+              input.style.pointerEvents = 'none';
+              document.body.appendChild(input);
+              input.showPicker();
+              
+              input.onchange = (e) => {
+                const date = new Date(e.target.value);
+                date.setHours(0, 0, 0, 0);
+                onSelectTask(id);
+                onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
+                document.body.removeChild(input);
+              };
+              
+              input.oncancel = () => {
+                if (input.parentNode) {
+                  document.body.removeChild(input);
+                }
+              };
+            }}
+          >
+            {formatDate(revisitDate) || 'Set date'}
           </button>
           <button 
             className="task-delete"
