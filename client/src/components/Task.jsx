@@ -88,7 +88,6 @@ const Task = ({
                 
                 const container = document.createElement('div');
                 container.style.position = 'fixed';
-                const rect = target.getBoundingClientRect();
                 container.style.left = `${rect.left}px`;
                 container.style.top = `${rect.bottom + window.scrollY}px`;
                 container.style.zIndex = '9999';
