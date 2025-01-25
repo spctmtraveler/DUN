@@ -77,24 +77,24 @@ const Task = ({
               className="task-date-label"
               onClick={(e) => {
                 e.stopPropagation();
-                const target = e.currentTarget;
-                const rect = target.getBoundingClientRect();
                 const input = document.createElement('input');
                 input.type = 'date';
-                input.style.position = 'fixed';
-                input.style.left = `${rect.left}px`;
-                input.style.top = `${rect.bottom + 5}px`;
+                input.style.position = 'absolute';
                 input.style.opacity = '0';
                 input.style.pointerEvents = 'none';
-                document.body.appendChild(input);
+                e.currentTarget.appendChild(input);
                 input.onchange = (e) => {
                   const date = new Date(e.target.value);
                   date.setHours(0, 0, 0, 0);
                   onSelectTask(id);
                   onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
-                  document.body.removeChild(input);
+                  e.currentTarget.parentNode.removeChild(input);
                 };
-                input.onclose = () => document.body.removeChild(input);
+                input.onclose = () => {
+                  if (input.parentNode) {
+                    input.parentNode.removeChild(input);
+                  }
+                };
                 input.showPicker();
               }}
             >
