@@ -86,26 +86,28 @@ const Task = ({
                 <Calendar size={14} />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <CalendarComponent
-                mode="single"
-                selected={revisitDate ? parseISO(revisitDate) : undefined}
-                onSelect={(date) => {
-                  console.log('Date selected:', date);
-                  if (date) {
-                    const newDate = new Date(date);
-                    console.log('New date:', newDate);
-                    newDate.setHours(0, 0, 0, 0);
-                    onMoveTask(
-                      { id, title, section, index },
-                      section,
-                      index,
-                      { revisitDate: newDate.toISOString(), order: order }
-                    );
-                  }
-                }}
-                initialFocus
-              />
+            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()}>
+              <div onClick={(e) => e.stopPropagation()}>
+                <CalendarComponent
+                  mode="single"
+                  selected={revisitDate ? parseISO(revisitDate) : undefined}
+                  onSelect={(date) => {
+                    console.log('Date selected:', date);
+                    if (date) {
+                      const newDate = new Date(date);
+                      console.log('New date:', newDate);
+                      newDate.setHours(0, 0, 0, 0);
+                      onMoveTask(
+                        { id, title, section, index },
+                        section,
+                        index,
+                        { revisitDate: newDate.toISOString(), order: order }
+                      );
+                    }
+                  }}
+                  initialFocus
+                />
+              </div>
             </PopoverContent>
           </Popover>
           <button 
