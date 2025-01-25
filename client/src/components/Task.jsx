@@ -86,7 +86,7 @@ const Task = ({
                 <Calendar size={14} />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()}>
+            <PopoverContent className="w-auto p-0">
               <CalendarComponent
                 mode="single"
                 selected={revisitDate ? parseISO(revisitDate) : undefined}
@@ -96,7 +96,6 @@ const Task = ({
                     const newDate = new Date(date);
                     console.log('New date:', newDate);
                     newDate.setHours(0, 0, 0, 0);
-                    onSelectTask(id);
                     onMoveTask(
                       { id, title, section, index },
                       section,
