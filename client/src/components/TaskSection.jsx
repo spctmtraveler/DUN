@@ -17,26 +17,22 @@ const TaskSection = ({
 
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    hover(item, monitor) {
-      // When hovering over a section with no tasks,
-      // move the item to the end of this section
-      if (tasks.length === 0 && item.section !== id) {
-        const additionalData = item.revisitDate ? { revisitDate: item.revisitDate } : {};
-        onMoveTask(item, id, 0, additionalData);
-        item.section = id;
-        item.index = 0;
-      }
+    hover: (item) => {
+      if (item.section === id) return;
+
+      // When dragging to a new section, move to the end
+      const newIndex = tasks.length;
+      onMoveTask(item, id, newIndex, {
+        revisitDate: item.revisitDate
+      });
+
+      // Update the dragged item's position
+      item.index = newIndex;
+      item.section = id;
     },
-    drop(item, monitor) {
-      // Handle drops only if we're not dropping on a Task
-      if (!monitor.didDrop()) {
-        const additionalData = item.revisitDate ? { revisitDate: item.revisitDate } : {};
-        onMoveTask(item, id, tasks.length, additionalData);
-      }
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver({ shallow: true }),
-    }),
+    collect: monitor => ({
+      isOver: monitor.isOver()
+    })
   });
 
   return (

@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import React from 'react';
+import { useDrag } from 'react-dnd';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -9,8 +9,7 @@ const Task = ({
   id, 
   title, 
   section, 
-  index, 
-  order, 
+  index,
   completed,
   selected,
   revisitDate,
@@ -19,50 +18,20 @@ const Task = ({
   onDeleteTask,
   onSelectTask 
 }) => {
-  const ref = useRef(null);
-
+  // Single responsibility: handle dragging this task
   const [{ isDragging }, drag] = useDrag({
     type: 'TASK',
-    item: { id, title, section, index, order, revisitDate },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
+    item: () => ({
+      id,
+      title,
+      section,
+      index,
+      revisitDate
     }),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging()
+    })
   });
-
-  const [{ handlerId, isOver }, drop] = useDrop({
-    accept: 'TASK',
-    collect(monitor) {
-      return {
-        handlerId: monitor.getHandlerId(),
-        isOver: monitor.isOver(),
-      }
-    },
-    hover(item, monitor) {
-      if (!ref.current) {
-        return;
-      }
-      const dragIndex = item.index;
-      const hoverIndex = index;
-
-      // Don't replace items with themselves
-      if (dragIndex === hoverIndex && item.section === section) {
-        return;
-      }
-
-      // Time to actually perform the action
-      const additionalData = item.revisitDate ? { revisitDate: item.revisitDate } : {};
-      onMoveTask(item, section, hoverIndex, additionalData);
-
-      // Note: we're mutating the monitor item here!
-      // Generally it's better to avoid mutations,
-      // but it's good here for the sake of performance
-      // to avoid expensive index searches.
-      item.index = hoverIndex;
-      item.section = section;
-    },
-  });
-
-  drag(drop(ref));
 
   const handleClick = (e) => {
     if (!e.target.closest('.task-controls, .task-checkbox')) {
@@ -79,11 +48,11 @@ const Task = ({
   };
 
   return (
-    <div
-      ref={ref}
-      className={`task ${isDragging ? 'dragging' : ''} ${isOver ? 'drop-target' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
+    <div 
+      ref={drag}
+      className={`task ${isDragging ? 'dragging' : ''} ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
       onClick={handleClick}
-      data-handler-id={handlerId}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
     >
       <div className="task-content">
         <div className="drag-handle">
@@ -120,7 +89,7 @@ const Task = ({
                       newDate.setDate(newDate.getDate() - 1); 
                       newDate.setHours(12, 0, 0, 0);
                       onMoveTask(
-                        { id, title, section, index, order },
+                        { id, title, section, index },
                         section,
                         index,
                         { revisitDate: newDate.toISOString() }
