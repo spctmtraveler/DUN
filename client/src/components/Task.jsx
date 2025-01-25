@@ -74,38 +74,43 @@ const Task = ({
         />
         <span className="task-title">{title}</span>
         <div className="task-controls">
-          <button 
-            className="task-date-label"
-            onClick={(e) => {
-              e.stopPropagation();
-              const input = document.createElement('input');
-              input.type = 'date';
-              input.value = revisitDate ? format(parseISO(revisitDate), 'yyyy-MM-dd') : '';
-              
-              input.onchange = (e) => {
-                const date = new Date(e.target.value);
-                date.setHours(0, 0, 0, 0);
-                onSelectTask(id);
-                onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
-              };
-              
-              input.style.position = 'absolute';
-              input.style.opacity = '0';
-              input.style.pointerEvents = 'none';
-              document.body.appendChild(input);
-              input.showPicker();
-              
-              input.addEventListener('cancel', () => {
-                document.body.removeChild(input);
-              }, { once: true });
-              
-              input.addEventListener('change', () => {
-                document.body.removeChild(input);
-              }, { once: true });
-            }}
-          >
-            {formatDate(revisitDate) || 'Set date'}
-          </button>
+          <div className="date-input-wrapper">
+            <span className="task-date-label">
+              {formatDate(revisitDate) || 'Set date'}
+            </span>
+            <button 
+              className="task-date"
+              onClick={(e) => {
+                e.stopPropagation();
+                const input = document.createElement('input');
+                input.type = 'date';
+                input.value = revisitDate ? format(parseISO(revisitDate), 'yyyy-MM-dd') : '';
+                
+                input.onchange = (e) => {
+                  const date = new Date(e.target.value);
+                  date.setHours(0, 0, 0, 0);
+                  onSelectTask(id);
+                  onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
+                };
+                
+                input.style.position = 'absolute';
+                input.style.opacity = '0';
+                input.style.pointerEvents = 'none';
+                document.body.appendChild(input);
+                input.showPicker();
+                
+                input.addEventListener('cancel', () => {
+                  document.body.removeChild(input);
+                }, { once: true });
+                
+                input.addEventListener('change', () => {
+                  document.body.removeChild(input);
+                }, { once: true });
+              }}
+            >
+              <Calendar size={14} />
+            </button>
+          </div>
           <button 
             className="task-delete"
             onClick={(e) => {
