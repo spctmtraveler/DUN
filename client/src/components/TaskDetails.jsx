@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Calendar } from 'lucide-react';
 
 const TaskDetails = React.memo(({ task }) => {
@@ -17,7 +17,8 @@ const TaskDetails = React.memo(({ task }) => {
         title: task.title || '',
         overview: task.overview || '',
         details: task.details || '',
-        revisitDate: task.revisitDate ? format(new Date(task.revisitDate), 'yyyy-MM-dd') : ''
+        // Convert UTC date to local date for input
+        revisitDate: task.revisitDate ? format(parseISO(task.revisitDate), 'yyyy-MM-dd') : ''
       });
     }
   }, [task]);
@@ -52,9 +53,11 @@ const TaskDetails = React.memo(({ task }) => {
     // Only send update if we have a task
     if (task) {
       let updateValue = value;
-      // Convert date string to ISO format for the database
+      // For dates, create a Date object at noon to avoid timezone issues
       if (name === 'revisitDate' && value) {
-        updateValue = new Date(value).toISOString();
+        const date = new Date(value);
+        date.setHours(12, 0, 0, 0);
+        updateValue = date.toISOString();
       }
 
       updateTaskMutation.mutate({
