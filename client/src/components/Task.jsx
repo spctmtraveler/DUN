@@ -90,7 +90,7 @@ const Task = ({
               <div onClick={(e) => e.stopPropagation()}>
                 <CalendarComponent
                   mode="single"
-                  selected={revisitDate ? parseISO(revisitDate) : undefined}
+                  selected={revisitDate ? new Date(revisitDate) : undefined}
                   onSelect={(date) => {
                     if (date) {
                       const newDate = new Date(date);
