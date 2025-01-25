@@ -86,21 +86,28 @@ const Task = ({
                   height: rect.height
                 });
                 
+                const container = document.createElement('div');
+                container.style.position = 'absolute';
+                container.style.left = `${e.clientX}px`;
+                container.style.top = `${e.clientY}px`;
+                container.style.zIndex = '9999';
+                
                 const input = document.createElement('input');
                 input.type = 'date';
-                input.style.position = 'fixed';
-                input.style.left = `${rect.left - 100}px`; // Offset to left
-                input.style.top = `${rect.top + 30}px`; // Position below with offset
                 input.style.opacity = '0';
-                input.style.pointerEvents = 'none';
-                document.body.appendChild(input);
+                input.style.position = 'absolute';
+                input.style.left = '0';
+                input.style.top = '0';
+                
+                container.appendChild(input);
+                document.body.appendChild(container);
                 
                 input.onchange = (e) => {
                   const date = new Date(e.target.value);
                   date.setHours(0, 0, 0, 0);
                   onSelectTask(id);
                   onMoveTask({ id, title, section, index }, section, index, { revisitDate: date.toISOString() });
-                  document.body.removeChild(input);
+                  document.body.removeChild(container);
                 };
                 input.onclose = () => {
                   if (input.parentNode) {
