@@ -47,7 +47,7 @@ const Task = ({
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = parseISO(dateString);
+    const date = addDays(parseISO(dateString), 1);
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
     return format(date, 'MM/dd');
