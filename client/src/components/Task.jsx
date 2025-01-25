@@ -94,7 +94,8 @@ const Task = ({
                   onSelect={(date) => {
                     if (date) {
                       const newDate = new Date(date);
-                      newDate.setHours(0, 0, 0, 0);
+                      newDate.setDate(newDate.getDate() - 1); // Adjust for timezone
+                      newDate.setHours(12, 0, 0, 0);
                       onMoveTask(
                         { id, title, section, index, order },
                         section,
