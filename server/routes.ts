@@ -51,11 +51,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Toggle completion status
-      if (req.body.completed !== undefined) {
-        updateData.completed = req.body.completed;
-      } else {
-        updateData.completed = !existingTask.completed;
-      }
+      updateData.completed = !existingTask.completed;
       updateData.overview = req.body.overview ?? existingTask.overview;
       updateData.details = req.body.details ?? existingTask.details;
       if (req.body.revisitDate !== undefined) {
