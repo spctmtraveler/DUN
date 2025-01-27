@@ -265,47 +265,25 @@ body {
   margin-left: 1.5rem;
 }
 
-/* Only including the drag and drop related styles */
+/* Task styles without drag and drop */
 .task {
   padding: 0.5rem;
   background: var(--background);
   border: 1px solid rgba(221, 221, 221, 0.1);
   border-radius: 4px;
   margin-bottom: 0.5rem;
-  transition: transform 0.2s ease, margin 0.2s ease;
-  cursor: move;
+  cursor: pointer;
   position: relative;
 }
 
-/* Dragging task appearance */
-.task.dragging {
-  opacity: 0.4;
-  transform: scale(1.02);
+.task.selected {
+  border-color: var(--accent);
   background: rgba(0, 206, 247, 0.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  pointer-events: none;
 }
 
-/* Drop target styles */
-.task.drop-target {
-  margin-top: 2rem;
-  position: relative;
-}
-
-.task.drop-target::before {
-  content: '';
-  position: absolute;
-  top: -1rem;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
-}
-
-/* Move subsequent tasks down to create space */
-.task.drop-target + .task {
-  margin-top: 0.5rem;
+.task.completed .task-title {
+  text-decoration: line-through;
+  opacity: 0.6;
 }
 
 .task-content {
@@ -314,8 +292,7 @@ body {
   gap: 0.5rem;
 }
 
-.drag-handle {
-  cursor: grab;
+.task-grip {
   color: var(--foreground);
   opacity: 0.5;
   display: flex;
@@ -323,11 +300,29 @@ body {
 }
 
 .task-checkbox {
+  appearance: none;
   width: 16px;
   height: 16px;
   border: 1px solid var(--foreground);
   border-radius: 2px;
   cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.task-checkbox:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.task-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--background);
+  font-size: 12px;
 }
 
 .task-title {
@@ -374,49 +369,7 @@ body {
   color: #ff4444;
 }
 
-.drop-target {
-  background: rgba(0, 206, 247, 0.1);
-  border-radius: 4px;
-}
-
-.task.selected {
-  border-color: var(--accent);
-  background: rgba(0, 206, 247, 0.05);
-}
-
-.task.completed .task-title {
-  text-decoration: line-through;
-  opacity: 0.6;
-}
-
-.task-checkbox {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--foreground);
-  border-radius: 2px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.task-checkbox:checked {
-  background-color: var(--accent);
-  border-color: var(--accent);
-}
-
-.task-checkbox:checked::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--background);
-  font-size: 12px;
-}
-
 .task-delete:hover {
-  color: #ff4444;
   opacity: 1;
 }
 

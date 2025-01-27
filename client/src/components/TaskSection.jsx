@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useDrop } from 'react-dnd';
 import { ChevronRight } from 'lucide-react';
 import Task from './Task';
 
@@ -14,41 +13,6 @@ const TaskSection = ({
   selectedTaskId
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-
-  // Temporarily comment out section-level drop handling to debug task-level drag and drop
-  /*
-  const [{ isOver, canDrop }, drop] = useDrop({
-    accept: 'TASK',
-    hover: (item, monitor) => {
-      console.debug('DnD: Section hover', {
-        draggedTask: item,
-        targetSection: id,
-        isOverSection: monitor.isOver({ shallow: true })
-      });
-
-      if (monitor.isOver({ shallow: true })) {
-        if (item.section === id) return;
-
-        console.debug('DnD: Moving to end of section', {
-          from: item.section,
-          to: id,
-          newIndex: tasks.length
-        });
-
-        onMoveTask(item, id, tasks.length, {
-          revisitDate: item.revisitDate
-        });
-
-        item.index = tasks.length;
-        item.section = id;
-      }
-    },
-    collect: monitor => ({
-      isOver: monitor.isOver({ shallow: true }),
-      canDrop: monitor.canDrop(),
-    })
-  });
-  */
 
   return (
     <div 
@@ -67,11 +31,10 @@ const TaskSection = ({
       </div>
       {isExpanded && (
         <div className="section-content">
-          {tasks.map((task, index) => (
+          {tasks.map((task) => (
             <Task
               key={task.id}
               {...task}
-              index={index}
               onMoveTask={onMoveTask}
               onToggleCompletion={onToggleCompletion}
               onDeleteTask={onDeleteTask}
