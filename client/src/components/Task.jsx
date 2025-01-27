@@ -70,7 +70,7 @@ const Task = ({
                       newDate.setDate(newDate.getDate() - 1); 
                       newDate.setHours(12, 0, 0, 0);
                       onMoveTask(
-                        { id, title, section },
+                        { id },
                         section,
                         undefined,
                         { revisitDate: newDate.toISOString() }
