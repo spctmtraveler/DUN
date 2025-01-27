@@ -265,57 +265,47 @@ body {
   margin-left: 1.5rem;
 }
 
+/* Only including the drag and drop related styles */
 .task {
   padding: 0.5rem;
   background: var(--background);
   border: 1px solid rgba(221, 221, 221, 0.1);
   border-radius: 4px;
   margin-bottom: 0.5rem;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, margin 0.2s ease;
   cursor: move;
   position: relative;
 }
 
-.task::before {
+/* Dragging task appearance */
+.task.dragging {
+  opacity: 0.4;
+  transform: scale(1.02);
+  background: rgba(0, 206, 247, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+/* Drop target styles */
+.task.drop-target {
+  margin-top: 2rem;
+  position: relative;
+}
+
+.task.drop-target::before {
   content: '';
   position: absolute;
+  top: -1rem;
   left: 0;
   right: 0;
   height: 2px;
   background: var(--accent);
-  opacity: 0;
-  transition: all 0.2s ease;
-  top: -1px;
-  transform: scaleX(0);
+  box-shadow: 0 0 8px var(--accent);
 }
 
-.task.drop-target::before {
-  opacity: 1;
-  transform: scaleX(1);
-}
-
-.task.dragging {
-  opacity: 0.4;
-  background: rgba(0, 206, 247, 0.05);
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Add gap animation when task is potential drop target */
-.task.drop-target {
-  transform: translateY(1rem);
-  margin-top: 1rem;
-}
-
+/* Move subsequent tasks down to create space */
 .task.drop-target + .task {
-  transform: translateY(1rem);
-}
-
-.task-section.drop-target {
-  background: rgba(0, 206, 247, 0.05);
-  border-radius: 4px;
-  outline: 2px dashed var(--accent);
-  outline-offset: 4px;
+  margin-top: 0.5rem;
 }
 
 .task-content {
