@@ -64,7 +64,7 @@ const Task = ({
                 <CalendarComponent
                   mode="single"
                   selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
-                  onSelect={(date) => {
+                  onSelect={(date, e) => {
                     if (date) {
                       const newDate = new Date(date);
                       newDate.setDate(newDate.getDate() - 1); 
@@ -76,6 +76,7 @@ const Task = ({
                         { revisitDate: newDate.toISOString() }
                       );
                     }
+                    e?.target?.closest('.popover-content')?.parentElement?.querySelector('[data-state="open"]')?.click();
                   }}
                   initialFocus
                 />
