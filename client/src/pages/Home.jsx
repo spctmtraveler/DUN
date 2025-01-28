@@ -140,9 +140,9 @@ const Home = () => {
     } else if (targetIndex === 0) {
       newOrder = sectionTasks[0].order / 2;
     } else if (targetIndex >= sectionTasks.length) {
-      newOrder = sectionTasks[sectionTasks.length - 1].order + 1000;
+      newOrder = sectionTasks[sectionTasks.length - 1]?.order ?? 0 + 1000;
     } else {
-      newOrder = (sectionTasks[targetIndex - 1].order + sectionTasks[targetIndex].order) / 2;
+      newOrder = ((sectionTasks[targetIndex - 1]?.order ?? 0) + (sectionTasks[targetIndex]?.order ?? 0)) / 2;
     }
 
     updateTaskMutation.mutate({
