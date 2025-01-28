@@ -158,7 +158,8 @@ const Home = () => {
     if (task) {
       updateTaskMutation.mutate({
         id: taskId,
-        completed: !task.completed
+        completed: !task.completed,
+        order: task.order
       });
     }
   };
