@@ -75,8 +75,11 @@ const Task = ({
                         null,
                         { revisitDate: newDate.toISOString() }
                       );
+                      const popoverTrigger = document.querySelector('[data-state="open"]');
+                      if (popoverTrigger) {
+                        popoverTrigger.click();
+                      }
                     }
-                    e?.target?.closest('.popover-content')?.parentElement?.querySelector('[data-state="open"]')?.click();
                   }}
                   initialFocus
                 />
