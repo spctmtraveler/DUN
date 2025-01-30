@@ -37,7 +37,7 @@ const Task = ({
   onSelectTask 
 }) => {
   const queryClient = useQueryClient();
-  
+
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, ...data }) => {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -110,7 +110,7 @@ const Task = ({
                 <CalendarComponent
                   mode="single"
                   selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
-                  onSelect={(date, e) => {
+                  onSelect={(date) => {
                     if (date) {
                       const newDate = new Date(date);
                       newDate.setDate(newDate.getDate() - 1); 
@@ -119,11 +119,6 @@ const Task = ({
                         id,
                         revisitDate: newDate.toISOString()
                       });
-                      const popoverElement = e?.target?.closest('[data-radix-popper-content-wrapper]');
-                      if (popoverElement) {
-                        const closeButton = popoverElement.querySelector('[data-radix-popper-close-trigger]');
-                        closeButton?.click();
-                      }
                     }
                   }}
                   initialFocus
