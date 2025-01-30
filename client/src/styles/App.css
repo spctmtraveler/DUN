@@ -265,7 +265,7 @@ body {
   margin-left: 1.5rem;
 }
 
-/* Task styles without drag and drop */
+/* Task styles with drag and drop */
 .task {
   padding: 0.5rem;
   background: var(--background);
@@ -274,6 +274,42 @@ body {
   margin-bottom: 0.5rem;
   cursor: pointer;
   position: relative;
+  transition: all 0.2s ease;
+}
+
+.task.dragging {
+  opacity: 0.5;
+  transform: scale(1.02);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.task.drop-target {
+  border: 2px dashed var(--accent);
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.task.drop-target::before {
+  content: '';
+  position: absolute;
+  top: -1rem;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  background: rgba(0, 206, 247, 0.1);
+  border-radius: 4px;
+}
+
+.task-preview {
+  padding: 0.5rem;
+  background: var(--background);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  opacity: 0.8;
+  pointer-events: none;
+  width: calc(100% - 2rem);
+  max-width: 500px;
 }
 
 .task.selected {

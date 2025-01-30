@@ -10,6 +10,7 @@ import { startOfDay, endOfDay, addDays, startOfWeek, endOfWeek, startOfMonth, en
 import Banner from '../components/Banner';
 import PanelContainer from '../components/PanelContainer';
 import config from '../config.json';
+import DragDropProvider from '../components/DndProvider';
 
 const Home = () => {
   // Panel visibility state - initialized from config
@@ -196,22 +197,24 @@ const Home = () => {
   };
 
   return (
-    <div className="app-container">
-      <Banner 
-        visiblePanels={visiblePanels} 
-        togglePanel={togglePanel} 
-        onAddTask={handleAddTask}
-        onFilterChange={handleFilterChange}
-      />
-      <PanelContainer 
-        visiblePanels={visiblePanels} 
-        tasks={filteredTasks}
-        onToggleCompletion={toggleTaskCompletion}
-        onDeleteTask={deleteTask}
-        onSelectTask={selectTask}
-        selectedTaskId={selectedTaskId}
-      />
-    </div>
+    <DragDropProvider>
+      <div className="app-container">
+        <Banner 
+          visiblePanels={visiblePanels} 
+          togglePanel={togglePanel} 
+          onAddTask={handleAddTask}
+          onFilterChange={handleFilterChange}
+        />
+        <PanelContainer 
+          visiblePanels={visiblePanels} 
+          tasks={filteredTasks}
+          onToggleCompletion={toggleTaskCompletion}
+          onDeleteTask={deleteTask}
+          onSelectTask={selectTask}
+          selectedTaskId={selectedTaskId}
+        />
+      </div>
+    </DragDropProvider>
   );
 };
 

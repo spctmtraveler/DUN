@@ -1,15 +1,19 @@
 /**
  * Task.jsx
  * Renders an individual task item with its controls and interactions.
- * Includes completion checkbox, title, date picker, and delete button.
+ * Includes drag and drop functionality, completion checkbox, title, date picker, and delete button.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useDrag, useDrop } from 'react-dnd';
+import TaskDragPreview from './TaskDragPreview';
+
+const TASK_DND_TYPE = 'task';
 
 /**
  * Task Component
@@ -23,6 +27,8 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
  * @param {Function} props.onToggleCompletion - Callback for toggling completion
  * @param {Function} props.onDeleteTask - Callback for deleting tasks
  * @param {Function} props.onSelectTask - Callback for selecting tasks
+ * @param {number} props.index - Task's index in the list
+ * @param {Function} props.moveTask - Callback for reordering tasks
  */
 const Task = ({ 
   id, 
@@ -33,11 +39,14 @@ const Task = ({
   revisitDate,
   onToggleCompletion,
   onDeleteTask,
-  onSelectTask 
+  onSelectTask,
+  index,
+  moveTask 
 }) => {
   // State to control the date picker popover
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const queryClient = useQueryClient();
+  const ref = useRef(null);
 
   // Mutation for updating task date
   const updateTaskMutation = useMutation({
@@ -54,6 +63,63 @@ const Task = ({
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     },
   });
+
+  // Set up drag source
+  const [{ isDragging }, drag, preview] = useDrag({
+    type: TASK_DND_TYPE,
+    item: { id, index, title, completed, revisitDate },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  // Set up drop target
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: TASK_DND_TYPE,
+    hover(item, monitor) {
+      if (!ref.current) return;
+
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) return;
+
+      // Get rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+
+      // Get mouse position
+      const clientOffset = monitor.getClientOffset();
+
+      // Get pixels to the top
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+      // Only perform the move when the mouse has crossed half of the items height
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
+      // Time to actually perform the action
+      moveTask(dragIndex, hoverIndex);
+
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      item.index = hoverIndex;
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  });
+
+  // Initialize drag and drop refs
+  drag(drop(ref));
+
+  const opacity = isDragging ? 0 : 1;
 
   /**
    * Handles clicking on the task
@@ -80,11 +146,13 @@ const Task = ({
 
   return (
     <div 
-      className={`task ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
+      ref={ref}
+      className={`task ${selected ? 'selected' : ''} ${completed ? 'completed' : ''} ${isDragging ? 'dragging' : ''} ${isOver ? 'drop-target' : ''}`}
       onClick={handleClick}
+      style={{ opacity }}
     >
       <div className="task-content">
-        <div className="task-grip">
+        <div className="task-grip" ref={drag}>
           <Grip size={16} />
         </div>
         <input 
