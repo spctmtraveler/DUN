@@ -7,6 +7,7 @@
 import React from 'react';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
@@ -35,6 +36,23 @@ const Task = ({
   onDeleteTask,
   onSelectTask 
 }) => {
+  const queryClient = useQueryClient();
+  
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ id, ...data }) => {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update task');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+  });
+
   /**
    * Handles clicking on the task
    * Prevents selection when clicking controls
