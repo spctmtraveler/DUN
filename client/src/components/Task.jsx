@@ -105,12 +105,12 @@ const Task = ({
                 <Calendar size={14} />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()}>
+            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()} onOpenAutoFocus={(e) => e.preventDefault()}>
               <div onClick={(e) => e.stopPropagation()}>
                 <CalendarComponent
                   mode="single"
                   selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
-                  onSelect={(date) => {
+                  onSelect={(date, e) => {
                     if (date) {
                       const newDate = new Date(date);
                       newDate.setDate(newDate.getDate() - 1); 
@@ -119,6 +119,11 @@ const Task = ({
                         id,
                         revisitDate: newDate.toISOString()
                       });
+                      const popoverElement = (e?.target as HTMLElement)?.closest('[data-radix-popper-content-wrapper]');
+                      if (popoverElement) {
+                        const closeButton = popoverElement.querySelector('[data-radix-popper-close-trigger]');
+                        (closeButton as HTMLElement)?.click();
+                      }
                     }
                   }}
                   initialFocus
