@@ -50,25 +50,31 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      // Only update completion status if provided
+      // Process each field from the request body
       if (req.body.completed !== undefined) {
         updateData.completed = req.body.completed;
       }
 
-      // Only update order if provided
       if (req.body.order !== undefined) {
-        updateData.order = req.body.order ?? existingTask.order;
+        updateData.order = req.body.order;
       }
 
-      // Only update these fields if explicitly provided
-      if (req.body.overview !== undefined) updateData.overview = req.body.overview;
-      if (req.body.details !== undefined) updateData.details = req.body.details;
+      if (req.body.overview !== undefined) {
+        updateData.overview = req.body.overview;
+      }
+
+      if (req.body.details !== undefined) {
+        updateData.details = req.body.details;
+      }
+
       if (req.body.revisitDate !== undefined) {
         updateData.revisitDate = new Date(req.body.revisitDate);
       }
 
       // Always update the updatedAt timestamp
       updateData.updatedAt = new Date();
+
+      console.log('Updating task:', { id, updateData }); // Debug log
 
       const [updatedTask] = await db
         .update(tasks)
@@ -79,6 +85,8 @@ export function registerRoutes(app: Express): Server {
       if (!updatedTask) {
         return res.status(404).json({ message: "Task not found" });
       }
+
+      console.log('Task updated:', updatedTask); // Debug log
       res.json(updatedTask);
     } catch (error) {
       console.error("Error updating task:", error);

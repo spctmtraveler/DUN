@@ -18,12 +18,16 @@ const TaskSection = ({
   // Mutation for updating task order
   const updateTaskOrderMutation = useMutation({
     mutationFn: async ({ id, order }) => {
+      console.log('Updating task order:', { id, order }); // Debug log
       const res = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order }),
       });
-      if (!res.ok) throw new Error('Failed to update task order');
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(`Failed to update task order: ${error}`);
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -50,6 +54,14 @@ const TaskSection = ({
       const prevTask = tasks[hoverIndex - 1];
       newOrder = (prevTask.order + targetTask.order) / 2;
     }
+
+    // Debug log the values
+    console.log('Moving task:', {
+      draggedTaskId: draggedTask.id,
+      newOrder: newOrder,
+      dragIndex,
+      hoverIndex
+    });
 
     // Update the task's order in the database
     updateTaskOrderMutation.mutate({
