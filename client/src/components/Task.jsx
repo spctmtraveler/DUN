@@ -20,7 +20,8 @@ const Task = ({
   revisitDate,
   onToggleCompletion,
   onDeleteTask,
-  onSelectTask 
+  onSelectTask,
+  dragHandleProps 
 }) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -60,7 +61,7 @@ const Task = ({
       onClick={handleClick}
     >
       <div className="task-content">
-        <div className="task-grip" data-no-dnd>
+        <div className="task-grip" {...dragHandleProps}>
           <Grip size={16} />
         </div>
         <input 

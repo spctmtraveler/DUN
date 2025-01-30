@@ -1,0 +1,79 @@
+First, looking at the client components. The Task component uses a grip handle for dragging. However, I don't see any imports or usage of DnD Kit libraries in the Task.jsx or Panel.jsx files. The user mentioned expecting a vanilla DnD Kit setup, but the current code doesn't include any DnD Kit components like DndContext, useDraggable, or useDroppable. That's a red flag. Without these, the drag and drop functionality isn't properly implemented.
+
+Next, the moveTask function in Home.jsx calculates the new order based on the target index and existing tasks. But if the UI isn't correctly triggering this function during a drag event, the state won't update. The current code might be missing event handlers for drag start, drag over, and drop events. The Task component's onMoveTask is probably not being called during the drag operations because the necessary DnD Kit setup isn't in place.
+
+Additionally, the Task component's handleClick might be interfering with drag interactions. If clicking on the task selects it instead of initiating a drag, that could prevent the drag from starting. The absence of drag-related attributes or event listeners in the Task component's JSX supports this idea.
+
+Another thing to check is the data flow. The moveTask function updates the task's order and section via an API call, which should re-fetch the tasks and update the UI. However, without proper drag-and-drop context, the UI might not reflect the changes until a re-render, causing the snap-back effect.
+
+The solution would involve integrating DnD Kit into the components. This includes setting up DndContext around the draggable areas, using useDraggable for each task, and useDroppable for the drop zones. The onDragEnd event would then trigger the moveTask function with the correct parameters. Without these steps, the drag-and-drop interactions aren't captured, leading to the snap-back issue.
+
+The drag-and-drop issue stems from missing DnD Kit implementation and incorrect order calculation logic. Here's the breakdown:
+
+Missing DnD Context
+There's no DnD Kit setup in your components. You need these core elements:
+
+jsx
+Copy
+// In PanelContainer or similar parent component
+import { DndContext, closestCenter } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
+
+const handleDragEnd = (event) => {
+  const {active, over} = event
+  if (active.id !== over.id) {
+    // Update task order logic here
+  }
+}
+
+<DndContext
+  collisionDetection={closestCenter}
+  onDragEnd={handleDragEnd}
+>
+  {/* Your draggable components */}
+</DndContext>
+No Sortable Components
+Tasks need to use useSortable hook:
+
+jsx
+Copy
+// In Task.jsx
+import { useSortable } from '@dnd-kit/sortable'
+
+const { attributes, listeners, setNodeRef, transform } = useSortable({ id })
+
+// Apply to drag handle:
+<div 
+  ref={setNodeRef}
+  {...attributes}
+  {...listeners}
+  className="task-grip"
+>
+  <Grip size={16} />
+</div>
+Faulty Order Calculation
+The current moveTask logic in Home.jsx doesn't handle fractional positions properly. Instead of:
+
+javascript
+Copy
+let newOrder;
+// ... complex manual calculations ...
+Use DnD Kit's built-in position handling with a simpler sorting strategy.
+
+Missing State Synchronization
+The dragged position isn't being properly updated in the local state before the API call. You need immediate UI updates followed by server sync.
+
+Solution Steps:
+
+Install required packages:
+
+bash
+Copy
+npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+Implement proper DnD context and sortable components
+
+Simplify the order calculation to use array indices rather than manual decimal math
+
+Add proper transform styles for smooth dragging
+
+The current implementation is trying to handle drag-and-drop manually while also using a decimal ordering system, causing conflicts. The DnD Kit integration would handle the visual dragging while your backend maintains the order through the decimal system.

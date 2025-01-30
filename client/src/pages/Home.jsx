@@ -70,7 +70,7 @@ const Home = () => {
 
   // Handle reordering tasks within a section
   const handleReorderTasks = async (sectionId, reorderedTasks) => {
-    // Calculate new order values
+    // Calculate new order values with larger gaps to prevent conflicts
     const updates = reorderedTasks.map((task, index) => ({
       id: task.id,
       order: (index + 1) * 1000 // Space of 1000 between each task
@@ -83,6 +83,9 @@ const Home = () => {
         order: update.order
       });
     }
+
+    // Invalidate queries to refresh the task list with new order
+    queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
   };
 
   const getFilteredTasks = () => {
