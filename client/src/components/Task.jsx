@@ -29,6 +29,7 @@ const TASK_DND_TYPE = 'task';
  * @param {Function} props.onSelectTask - Callback for selecting tasks
  * @param {number} props.index - Task's index in the list
  * @param {Function} props.moveTask - Callback for reordering tasks
+ * @param {number} props.order - Task order in the list
  */
 const Task = ({ 
   id, 
@@ -41,7 +42,8 @@ const Task = ({
   onDeleteTask,
   onSelectTask,
   index,
-  moveTask 
+  moveTask,
+  order 
 }) => {
   // State to control the date picker popover
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -67,7 +69,7 @@ const Task = ({
   // Set up drag source
   const [{ isDragging }, drag, preview] = useDrag({
     type: TASK_DND_TYPE,
-    item: { id, index, title, completed, revisitDate },
+    item: { id, index, title, completed, revisitDate, order },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -184,7 +186,7 @@ const Task = ({
                     const newDate = new Date(date);
                     newDate.setDate(newDate.getDate() - 1); 
                     newDate.setHours(12, 0, 0, 0);
-                    // Simply update the revisit date
+                    // Update the revisit date without affecting order
                     updateTaskMutation.mutate({
                       id,
                       revisitDate: newDate.toISOString()

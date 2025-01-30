@@ -57,7 +57,7 @@ export function registerRoutes(app: Express): Server {
 
       // Only update order if provided
       if (req.body.order !== undefined) {
-        updateData.order = req.body.order;
+        updateData.order = req.body.order ?? existingTask.order;
       }
 
       // Only update these fields if explicitly provided

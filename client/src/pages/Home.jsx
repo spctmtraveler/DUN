@@ -148,11 +148,12 @@ const Home = () => {
 
     // Calculate the order value for the new task (max + 1000)
     const maxOrder = tasks.length ? Math.max(...tasks.map(t => t.order)) : 0;
+    const newOrder = (maxOrder ?? 0) + 1000;
     const newTask = {
       title: taskTitle,
       section: 'Triage',
       completed: false,
-      order: maxOrder + 1000
+      order: newOrder
     };
 
     createTaskMutation.mutate(newTask);
