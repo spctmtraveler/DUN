@@ -50,10 +50,12 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      // Toggle completion status
-      updateData.completed = !existingTask.completed;
-      updateData.order = existingTask.order; // Always preserve existing order
-      updateData.overview = req.body.overview ?? existingTask.overview;
+      // Only update completion status if provided
+      if (req.body.completed !== undefined) {
+        updateData.completed = req.body.completed;
+      }
+      // Only update these fields if explicitly provided
+      if (req.body.overview !== undefined) updateData.overview = req.body.overview;
       updateData.details = req.body.details ?? existingTask.details;
       if (req.body.revisitDate !== undefined) {
         updateData.revisitDate = new Date(req.body.revisitDate);

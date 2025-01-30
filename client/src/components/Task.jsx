@@ -72,7 +72,7 @@ const Task = ({
           type="checkbox" 
           className="task-checkbox" 
           checked={completed}
-          onChange={() => onToggleCompletion(id)}
+          onChange={() => onToggleCompletion(id, completed)}
         />
         <span className="task-title">{title}</span>
         <div className="task-controls">

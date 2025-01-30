@@ -176,15 +176,11 @@ const Home = () => {
    * Toggles the completion status of a task
    * @param {number} taskId - ID of the task to toggle
    */
-  const toggleTaskCompletion = (taskId) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      updateTaskMutation.mutate({
-        id: taskId,
-        completed: !task.completed,
-        order: task.order
-      });
-    }
+  const toggleTaskCompletion = (taskId, currentCompleted) => {
+    updateTaskMutation.mutate({
+      id: taskId,
+      completed: !currentCompleted
+    });
   };
 
   /**
