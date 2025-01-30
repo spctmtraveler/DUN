@@ -23,7 +23,7 @@ export function registerRoutes(app: Express): Server {
         title: req.body.title,
         section: req.body.section || "Triage",
         completed: false,
-        order: req.body.order,
+        order: typeof req.body.order === 'number' ? req.body.order : 1000, // Ensure default order
       };
 
       const [newTask] = await db.insert(tasks).values(taskData).returning();
@@ -38,9 +38,6 @@ export function registerRoutes(app: Express): Server {
   app.patch("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
     try {
-      // Create an update object only with the fields that are present in the request
-      const updateData: Partial<InsertTask> = {};
-
       const [existingTask] = await db
         .select()
         .from(tasks)
@@ -50,13 +47,19 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      // Process each field from the request body
-      if (req.body.completed !== undefined) {
-        updateData.completed = req.body.completed;
+      // Initialize update data with existing values to prevent null
+      const updateData: Partial<InsertTask> = {
+        order: existingTask.order // Initialize with existing order
+      };
+
+      // Update order if provided and valid
+      if (typeof req.body.order === 'number' && !isNaN(req.body.order)) {
+        updateData.order = req.body.order;
       }
 
-      if (req.body.order !== undefined) {
-        updateData.order = req.body.order;
+      // Update other fields if provided
+      if (typeof req.body.completed === 'boolean') {
+        updateData.completed = req.body.completed;
       }
 
       if (req.body.overview !== undefined) {
@@ -71,10 +74,10 @@ export function registerRoutes(app: Express): Server {
         updateData.revisitDate = new Date(req.body.revisitDate);
       }
 
-      // Always update the updatedAt timestamp
+      // Always update the timestamp
       updateData.updatedAt = new Date();
 
-      console.log('Updating task:', { id, updateData }); // Debug log
+      console.log('Updating task:', { id, updateData });
 
       const [updatedTask] = await db
         .update(tasks)
@@ -86,7 +89,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      console.log('Task updated:', updatedTask); // Debug log
+      console.log('Task updated:', updatedTask);
       res.json(updatedTask);
     } catch (error) {
       console.error("Error updating task:", error);
