@@ -19,21 +19,6 @@ const iconMap = {
   hourglass: AiOutlineHourglass
 };
 
-/**
- * Panel Component
- * @param {Object} props
- * @param {string} props.id - Unique identifier for the panel
- * @param {string} props.title - Display title of the panel
- * @param {string} props.icon - Icon identifier for the panel
- * @param {boolean} props.isVisible - Whether the panel is currently visible
- * @param {string} props.width - CSS width value for the panel
- * @param {Array} props.tasks - Array of tasks to display (if applicable)
- * @param {Function} props.onMoveTask - Callback for moving tasks
- * @param {Function} props.onToggleCompletion - Callback for toggling task completion
- * @param {Function} props.onDeleteTask - Callback for deleting tasks
- * @param {Function} props.onSelectTask - Callback for selecting a task
- * @param {number} props.selectedTaskId - ID of the currently selected task
- */
 const Panel = ({ 
   id, 
   title, 
@@ -44,21 +29,16 @@ const Panel = ({
   onToggleCompletion,
   onDeleteTask,
   onSelectTask,
-  selectedTaskId
+  selectedTaskId,
+  onReorderTasks
 }) => {
   const Icon = iconMap[icon];
   const selectedTask = tasks.find(task => task.id === selectedTaskId);
 
-  /**
-   * Renders the hours list for the Hours panel
-   * Shows hours from 0-23 with AM/PM indicators
-   * Automatically scrolls to the current hour
-   */
   const renderHoursList = () => {
     const hours = [];
     const currentHour = new Date().getHours();
 
-    // Generate hour elements
     for (let i = 0; i < 24; i++) {
       const displayHour = i === 0 || i === 12 ? 12 : i % 12;
       const isPM = i >= 12;
@@ -70,7 +50,6 @@ const Panel = ({
       );
     }
 
-    // Add ref to current hour for scrolling
     const hourListRef = React.useRef(null);
     React.useEffect(() => {
       if (hourListRef.current) {
@@ -87,10 +66,6 @@ const Panel = ({
     );
   };
 
-  /**
-   * Renders the task sections for the Tasks panel
-   * Includes Triage, A, B, and C sections
-   */
   const renderTaskSections = () => {
     const sections = ['Triage', 'A', 'B', 'C'];
     return sections.map(section => {
@@ -106,6 +81,7 @@ const Panel = ({
           onDeleteTask={onDeleteTask}
           onSelectTask={onSelectTask}
           selectedTaskId={selectedTaskId}
+          onReorderTasks={onReorderTasks}  // Make sure we pass this prop
         />
       );
     });
@@ -121,20 +97,13 @@ const Panel = ({
         <h2 className="panel-title">{title}</h2>
       </div>
       <div className="panel-content">
-        {/* Render different content based on panel type */}
-        {title === 'Hours' && (
-          <ul className="hours-list">
-            {renderHoursList()}
-          </ul>
-        )}
+        {title === 'Hours' && renderHoursList()}
         {title === 'Tasks' && (
           <div className="task-sections">
             {renderTaskSections()}
           </div>
         )}
-        {title === 'Task' && (
-          <TaskDetails task={selectedTask} />
-        )}
+        {title === 'Task' && <TaskDetails task={selectedTask} />}
       </div>
     </div>
   );
