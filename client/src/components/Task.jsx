@@ -110,7 +110,7 @@ const Task = ({
                 <CalendarComponent
                   mode="single"
                   selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
-                  onSelect={(date) => {
+                  onSelect={(date, e) => {
                     if (date) {
                       const newDate = new Date(date);
                       newDate.setDate(newDate.getDate() - 1); 
@@ -119,6 +119,11 @@ const Task = ({
                         id,
                         revisitDate: newDate.toISOString()
                       });
+                      const popoverElement = e?.target?.closest('[data-radix-popper-content-wrapper]');
+                      if (popoverElement) {
+                        const closeButton = popoverElement.querySelector('[data-radix-popover-close-trigger]');
+                        if (closeButton) closeButton.click();
+                      }
                     }
                   }}
                   initialFocus
