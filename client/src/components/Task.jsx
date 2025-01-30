@@ -4,10 +4,9 @@
  * Includes completion checkbox, title, date picker, and delete button.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
@@ -32,26 +31,13 @@ const Task = ({
   completed,
   selected,
   revisitDate,
+  onMoveTask,
   onToggleCompletion,
   onDeleteTask,
   onSelectTask 
 }) => {
-  const queryClient = useQueryClient();
-
-  const updateTaskMutation = useMutation({
-    mutationFn: async ({ id, ...data }) => {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error('Failed to update task');
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    },
-  });
+  // State to control the date picker popover
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   /**
    * Handles clicking on the task
@@ -96,7 +82,7 @@ const Task = ({
           <span className="task-date-label">
             {formatDate(revisitDate) || 'Set date'}
           </span>
-          <Popover>
+          <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
             <PopoverTrigger asChild>
               <button 
                 className="task-date"
@@ -105,30 +91,27 @@ const Task = ({
                 <Calendar size={14} />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()} onOpenAutoFocus={(e) => e.preventDefault()}>
-              <div onClick={(e) => e.stopPropagation()}>
-                <CalendarComponent
-                  mode="single"
-                  selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
-                  onSelect={(date, e) => {
-                    if (date) {
-                      const newDate = new Date(date);
-                      newDate.setDate(newDate.getDate() - 1); 
-                      newDate.setHours(12, 0, 0, 0);
-                      updateTaskMutation.mutate({
-                        id,
-                        revisitDate: newDate.toISOString()
-                      });
-                      const popoverElement = e?.target?.closest('[data-radix-popper-content-wrapper]');
-                      if (popoverElement) {
-                        const closeButton = popoverElement.querySelector('[data-radix-popover-close-trigger]');
-                        if (closeButton) closeButton.click();
-                      }
-                    }
-                  }}
-                  initialFocus
-                />
-              </div>
+            <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()}>
+              <CalendarComponent
+                mode="single"
+                selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
+                onSelect={(date) => {
+                  if (date) {
+                    const newDate = new Date(date);
+                    newDate.setDate(newDate.getDate() - 1); 
+                    newDate.setHours(12, 0, 0, 0);
+                    onMoveTask(
+                      { id, title, section },
+                      section,
+                      undefined,
+                      { revisitDate: newDate.toISOString() }
+                    );
+                    // Explicitly close the date picker
+                    setIsDatePickerOpen(false);
+                  }
+                }}
+                initialFocus
+              />
             </PopoverContent>
           </Popover>
           <button 
