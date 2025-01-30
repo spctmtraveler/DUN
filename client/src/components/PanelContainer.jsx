@@ -8,7 +8,8 @@ const PanelContainer = ({
   onToggleCompletion,
   onDeleteTask,
   onSelectTask,
-  selectedTaskId
+  selectedTaskId,
+  onReorderTasks
 }) => {
   const visiblePanelCount = Object.values(visiblePanels).filter(Boolean).length;
   const panelWidth = visiblePanelCount > 0 ? `${100 / visiblePanelCount}%` : '0';
@@ -28,6 +29,7 @@ const PanelContainer = ({
           onDeleteTask={onDeleteTask}
           onSelectTask={onSelectTask}
           selectedTaskId={selectedTaskId}
+          onReorderTasks={onReorderTasks}
         />
       ))}
     </div>
