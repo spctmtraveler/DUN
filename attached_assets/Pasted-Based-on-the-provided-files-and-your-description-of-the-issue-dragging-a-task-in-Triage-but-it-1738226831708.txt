@@ -1,0 +1,134 @@
+Based on the provided files and your description of the issue (dragging a task in **Triage**, but it "jumps back" or moves unexpectedly), here are the most likely causes and solutions:
+
+---
+
+## 🔍 **Identified Issues**
+### 1️⃣ **Competing Ordering Systems**
+   - **Symptom:** The task jumps slightly before returning to its original position.
+   - **Cause:** The **order value** might not be updating correctly due to conflicting logic between **frontend drag/drop state management** and **backend ordering persistence**.
+   - **Code Evidence:**
+     - The **Home.jsx `moveTask` function** updates the task order using this logic:
+       ```js
+       let newOrder;
+       if (sectionTasks.length === 0) {
+         newOrder = 10000;
+       } else if (targetIndex === 0) {
+         newOrder = sectionTasks[0].order / 2;
+       } else if (targetIndex >= sectionTasks.length) {
+         newOrder = sectionTasks[sectionTasks.length - 1]?.order ?? 0 + 1000;
+       } else {
+         newOrder = ((sectionTasks[targetIndex - 1]?.order ?? 0) + (sectionTasks[targetIndex]?.order ?? 0)) / 2;
+       }
+       ```
+     - **Potential Issue:** 
+       - If tasks **don't have properly spaced order values**, the math could be incorrect.
+       - If `targetIndex === 0`, the **new order is half of the first task's order**, which might cause tasks to overlap or revert.
+       - If `targetIndex >= sectionTasks.length`, the **new order might be adding incorrectly** (`??` operator misuse).
+
+### 2️⃣ **Delayed Backend Update & State Desync**
+   - **Symptom:** The task briefly moves, then snaps back.
+   - **Cause:** The frontend updates the position immediately, but **the backend might return outdated data**, resetting the UI.
+   - **Code Evidence:**
+     - The update logic in `server/routes.ts`:
+       ```ts
+       const [updatedTask] = await db
+         .update(tasks)
+         .set(updateData)
+         .where(eq(tasks.id, parseInt(id)))
+         .returning();
+       ```
+     - **Potential Issue:**
+       - The frontend updates `state` immediately.
+       - If the backend takes too long, React Query might **refetch old order values**, causing the flicker.
+
+### 3️⃣ **Drag-and-Drop Misalignment**
+   - **Symptom:** Items seem to "jump" slightly after dropping.
+   - **Cause:** The **dragging state doesn't match the re-rendered list**.
+   - **Possible Culprit:**
+     - The `<TaskSection>` component sorts by:
+       ```js
+       tasks.filter(task => task.section === section)
+         .sort((a, b) => a.order - b.order);
+       ```
+     - **If React's state updates before the backend confirms the change**, the UI might momentarily resort the list incorrectly.
+
+---
+
+## ✅ **Recommended Fixes**
+### 🔹 **1. Ensure Proper Order Spacing**
+Modify the `moveTask` function to use **consistent spacing**:
+```js
+let newOrder;
+if (sectionTasks.length === 0) {
+  newOrder = 10000;
+} else if (targetIndex === 0) {
+  newOrder = sectionTasks[0].order - 1000; // Instead of division, ensure space
+} else if (targetIndex >= sectionTasks.length) {
+  newOrder = sectionTasks[sectionTasks.length - 1].order + 1000;
+} else {
+  newOrder = (sectionTasks[targetIndex - 1].order + sectionTasks[targetIndex].order) / 2;
+}
+```
+🔹 **Why?** Ensures task orders don’t become too close together (e.g., floating-point precision errors).
+
+---
+
+### 🔹 **2. Add Temporary UI State Before Backend Sync**
+Modify `moveTask` to optimistically update the frontend while waiting for the backend confirmation:
+```js
+const moveTask = (draggedTask, targetSection, targetIndex, additionalData = {}) => {
+  const tempId = `temp-${draggedTask.id}`;
+  
+  // 1️⃣ Optimistically update local state immediately
+  setTasks((prevTasks) =>
+    prevTasks.map(t => 
+      t.id === draggedTask.id ? { ...t, section: targetSection, order: newOrder } : t
+    )
+  );
+
+  // 2️⃣ Call backend
+  updateTaskMutation.mutate(
+    { id: draggedTask.id, section: targetSection, order: newOrder, ...additionalData },
+    {
+      onError: () => {
+        // 3️⃣ Rollback on failure
+        setTasks(prevTasks => prevTasks.filter(t => t.id !== tempId));
+      }
+    }
+  );
+};
+```
+🔹 **Why?** Prevents UI from snapping back due to delayed backend sync.
+
+---
+
+### 🔹 **3. Ensure React State Syncs with Backend**
+Modify `useQuery` in **Home.jsx**:
+```js
+const { data: tasks = [] } = useQuery({
+  queryKey: ['/api/tasks'],
+  staleTime: 500, // Prevents aggressive refetching
+});
+```
+🔹 **Why?** Prevents unnecessary re-renders pulling old order values from the server.
+
+---
+
+### 🔹 **4. Debug Drag Drop Position Issues**
+In `TaskSection.jsx`, **log the order values** when rendering:
+```js
+tasks
+  .sort((a, b) => a.order - b.order)
+  .forEach(t => console.log(`Task ${t.id} Order: ${t.order}`));
+```
+🔹 **Why?** Helps identify if orders are too close together (e.g., `1000.5` vs. `1000.4999`).
+
+---
+
+## **Summary of Fixes**
+1️⃣ **Adjust ordering logic** to prevent tasks from being spaced too closely.  
+2️⃣ **Optimistically update UI** before waiting for the backend.  
+3️⃣ **Reduce stale React Query fetches** to prevent UI resets.  
+4️⃣ **Log orders while dragging** to debug jumps.
+
+Let me know if you need to check any additional files! 🚀

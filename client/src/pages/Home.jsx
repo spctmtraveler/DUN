@@ -22,9 +22,10 @@ const Home = () => {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
+    staleTime: 500, // Prevent aggressive refetching
   });
 
-  // Task mutations
+  // Task mutations remain unchanged except updateTaskMutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, ...data }) => {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -35,7 +36,28 @@ const Home = () => {
       if (!res.ok) throw new Error('Failed to update task');
       return res.json();
     },
-    onSuccess: () => {
+    onMutate: async ({ id, order }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/tasks'] });
+
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData(['/api/tasks']);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['/api/tasks'], old => 
+        old.map(task => 
+          task.id === id ? { ...task, order } : task
+        )
+      );
+
+      return { previousTasks };
+    },
+    onError: (err, newTodo, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['/api/tasks'], context.previousTasks);
+    },
+    onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     },
   });
@@ -70,22 +92,26 @@ const Home = () => {
 
   // Handle reordering tasks within a section
   const handleReorderTasks = async (sectionId, reorderedTasks) => {
-    // Calculate new order values with larger gaps to prevent conflicts
-    const updates = reorderedTasks.map((task, index) => ({
-      id: task.id,
-      order: (index + 1) * 1000 // Space of 1000 between each task
-    }));
+    try {
+      // Calculate new order values with consistent spacing
+      const updates = reorderedTasks.map((task, index) => ({
+        id: task.id,
+        order: (index + 1) * 10000 // Use larger gaps (10000) to prevent floating point issues
+      }));
 
-    // Update each task's order in sequence
-    for (const update of updates) {
-      await updateTaskMutation.mutateAsync({
-        id: update.id,
-        order: update.order
-      });
+      // Update tasks in parallel with optimistic updates
+      await Promise.all(
+        updates.map(update => 
+          updateTaskMutation.mutateAsync({
+            id: update.id,
+            order: update.order
+          })
+        )
+      );
+    } catch (error) {
+      console.error('Error reordering tasks:', error);
+      // Error handling is managed by the mutation
     }
-
-    // Invalidate queries to refresh the task list with new order
-    queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
   };
 
   const getFilteredTasks = () => {

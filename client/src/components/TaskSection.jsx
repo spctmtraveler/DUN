@@ -18,26 +18,31 @@ const TaskSection = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Initialize sensors for drag and drop
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px of movement required before activation
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
-  // Only enable drag and drop for the Triage section initially
+  // Only enable drag and drop for the Triage section
   const shouldEnableDragAndDrop = id === 'Triage';
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
+    if (active.id !== over?.id) {
       const oldIndex = tasks.findIndex(task => task.id === active.id);
       const newIndex = tasks.findIndex(task => task.id === over.id);
 
-      const newOrder = arrayMove(tasks, oldIndex, newIndex);
-      onReorderTasks(id, newOrder);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove(tasks, oldIndex, newIndex);
+        onReorderTasks(id, newOrder);
+      }
     }
   };
 
