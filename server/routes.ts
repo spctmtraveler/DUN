@@ -62,7 +62,7 @@ export function registerRoutes(app: Express): Server {
 
       // Only update these fields if explicitly provided
       if (req.body.overview !== undefined) updateData.overview = req.body.overview;
-      updateData.details = req.body.details ?? existingTask.details;
+      if (req.body.details !== undefined) updateData.details = req.body.details;
       if (req.body.revisitDate !== undefined) {
         updateData.revisitDate = new Date(req.body.revisitDate);
       }

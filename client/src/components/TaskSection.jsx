@@ -44,7 +44,7 @@ const TaskSection = ({
       newOrder = targetTask.order - 1000;
     } else if (hoverIndex === tasks.length - 1) {
       // Moving to the end
-      newOrder = targetTask.order + 1000;
+      newOrder = (targetTask.order + 1000);
     } else {
       // Moving between two tasks
       const prevTask = tasks[hoverIndex - 1];
