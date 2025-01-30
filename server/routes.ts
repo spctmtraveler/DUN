@@ -54,6 +54,12 @@ export function registerRoutes(app: Express): Server {
       if (req.body.completed !== undefined) {
         updateData.completed = req.body.completed;
       }
+
+      // Only update order if provided
+      if (req.body.order !== undefined) {
+        updateData.order = req.body.order;
+      }
+
       // Only update these fields if explicitly provided
       if (req.body.overview !== undefined) updateData.overview = req.body.overview;
       updateData.details = req.body.details ?? existingTask.details;
