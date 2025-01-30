@@ -6,7 +6,6 @@ const TaskSection = ({
   id, 
   title, 
   tasks = [], 
-  onMoveTask,
   onToggleCompletion,
   onDeleteTask,
   onSelectTask,
@@ -35,7 +34,6 @@ const TaskSection = ({
             <Task
               key={task.id}
               {...task}
-              onMoveTask={onMoveTask}
               onToggleCompletion={onToggleCompletion}
               onDeleteTask={onDeleteTask}
               onSelectTask={onSelectTask}

@@ -41,7 +41,6 @@ const Panel = ({
   isVisible, 
   width, 
   tasks = [], 
-  onMoveTask,
   onToggleCompletion,
   onDeleteTask,
   onSelectTask,
@@ -103,7 +102,6 @@ const Panel = ({
           id={section}
           title={section}
           tasks={sectionTasks}
-          onMoveTask={onMoveTask}
           onToggleCompletion={onToggleCompletion}
           onDeleteTask={onDeleteTask}
           onSelectTask={onSelectTask}

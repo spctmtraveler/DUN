@@ -5,7 +5,6 @@ import config from '../config.json';
 const PanelContainer = ({ 
   visiblePanels, 
   tasks, 
-  onMoveTask,
   onToggleCompletion,
   onDeleteTask,
   onSelectTask,
@@ -25,7 +24,6 @@ const PanelContainer = ({
           isVisible={visiblePanels[panel.id]}
           width={panelWidth}
           tasks={tasks}
-          onMoveTask={onMoveTask}
           onToggleCompletion={onToggleCompletion}
           onDeleteTask={onDeleteTask}
           onSelectTask={onSelectTask}

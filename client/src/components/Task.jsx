@@ -31,7 +31,6 @@ const Task = ({
   completed,
   selected,
   revisitDate,
-  onMoveTask,
   onToggleCompletion,
   onDeleteTask,
   onSelectTask 

@@ -158,21 +158,6 @@ const Home = () => {
   };
 
   /**
-   * Moves a task to a new position
-   * @param {Object} draggedTask - Task being moved
-   * @param {string} targetSection - Section to move the task to
-   * @param {number} targetIndex - Index within the section
-   * @param {Object} additionalData - Additional data to update (e.g., revisitDate)
-   */
-  const moveTask = (draggedTask, targetSection, targetIndex, additionalData = {}) => {
-    // Currently just updates additional data since drag-and-drop is disabled
-    updateTaskMutation.mutate({
-      id: draggedTask.id,
-      ...additionalData
-    });
-  };
-
-  /**
    * Toggles the completion status of a task
    * @param {number} taskId - ID of the task to toggle
    */
@@ -221,7 +206,6 @@ const Home = () => {
       <PanelContainer 
         visiblePanels={visiblePanels} 
         tasks={filteredTasks}
-        onMoveTask={moveTask}
         onToggleCompletion={toggleTaskCompletion}
         onDeleteTask={deleteTask}
         onSelectTask={selectTask}
