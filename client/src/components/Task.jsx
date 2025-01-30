@@ -119,10 +119,10 @@ const Task = ({
                         id,
                         revisitDate: newDate.toISOString()
                       });
-                      const popoverElement = (e?.target as HTMLElement)?.closest('[data-radix-popper-content-wrapper]');
+                      const popoverElement = e?.target?.closest('[data-radix-popper-content-wrapper]');
                       if (popoverElement) {
                         const closeButton = popoverElement.querySelector('[data-radix-popper-close-trigger]');
-                        (closeButton as HTMLElement)?.click();
+                        closeButton?.click();
                       }
                     }
                   }}
