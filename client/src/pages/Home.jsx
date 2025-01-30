@@ -1,3 +1,9 @@
+/**
+ * Home.jsx
+ * Main container component for the task management application.
+ * Manages global state and coordinates interactions between components.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { startOfDay, endOfDay, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
@@ -6,19 +12,30 @@ import PanelContainer from '../components/PanelContainer';
 import config from '../config.json';
 
 const Home = () => {
+  // Panel visibility state - initialized from config
   const [visiblePanels, setVisiblePanels] = useState(
     Object.fromEntries(config.panels.map(panel => [panel.id, true]))
   );
+
+  // Currently selected task for editing in the Task Details panel
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+
+  // Active filter for the task list (e.g., 'all', 'today', 'thisWeek')
   const [activeFilter, setActiveFilter] = useState('all');
+
   const queryClient = useQueryClient();
 
-  // Fetch tasks
+  // Fetch all tasks from the backend
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
   });
 
-  // Filter tasks based on the active filter
+  /**
+   * Filters tasks based on the active filter setting.
+   * - 'all': Returns all tasks
+   * - 'triage': Returns only tasks in the Triage section
+   * - 'today', 'tomorrow', 'thisWeek', etc.: Filters by revisit date
+   */
   const getFilteredTasks = () => {
     if (activeFilter === 'all') return tasks;
     if (activeFilter === 'triage') return tasks.filter(task => task.section === 'Triage');
@@ -64,7 +81,7 @@ const Home = () => {
 
   const filteredTasks = getFilteredTasks();
 
-  // Create task mutation
+  // Mutation for creating new tasks
   const createTaskMutation = useMutation({
     mutationFn: async (taskData) => {
       const res = await fetch('/api/tasks', {
@@ -80,7 +97,7 @@ const Home = () => {
     },
   });
 
-  // Update task mutation
+  // Mutation for updating existing tasks
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, ...data }) => {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -96,7 +113,7 @@ const Home = () => {
     },
   });
 
-  // Delete task mutation
+  // Mutation for deleting tasks
   const deleteTaskMutation = useMutation({
     mutationFn: async (id) => {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -110,6 +127,10 @@ const Home = () => {
     },
   });
 
+  /**
+   * Toggles visibility of a panel
+   * @param {string} panelId - ID of the panel to toggle
+   */
   const togglePanel = (panelId) => {
     setVisiblePanels(prev => ({
       ...prev,
@@ -117,9 +138,14 @@ const Home = () => {
     }));
   };
 
+  /**
+   * Creates a new task
+   * @param {string} taskTitle - Title of the new task
+   */
   const handleAddTask = (taskTitle) => {
     if (!taskTitle.trim()) return;
 
+    // Calculate the order value for the new task (max + 1000)
     const maxOrder = tasks.length ? Math.max(...tasks.map(t => t.order)) : 0;
     const newTask = {
       title: taskTitle,
@@ -131,28 +157,25 @@ const Home = () => {
     createTaskMutation.mutate(newTask);
   };
 
+  /**
+   * Moves a task to a new position
+   * @param {Object} draggedTask - Task being moved
+   * @param {string} targetSection - Section to move the task to
+   * @param {number} targetIndex - Index within the section
+   * @param {Object} additionalData - Additional data to update (e.g., revisitDate)
+   */
   const moveTask = (draggedTask, targetSection, targetIndex, additionalData = {}) => {
-    const sectionTasks = tasks.filter(t => t.section === targetSection);
-
-    let newOrder;
-    if (sectionTasks.length === 0) {
-      newOrder = 10000;
-    } else if (targetIndex === 0) {
-      newOrder = sectionTasks[0].order / 2;
-    } else if (targetIndex >= sectionTasks.length) {
-      newOrder = sectionTasks[sectionTasks.length - 1]?.order ?? 0 + 1000;
-    } else {
-      newOrder = ((sectionTasks[targetIndex - 1]?.order ?? 0) + (sectionTasks[targetIndex]?.order ?? 0)) / 2;
-    }
-
+    // Currently just updates additional data since drag-and-drop is disabled
     updateTaskMutation.mutate({
       id: draggedTask.id,
-      section: targetSection,
-      order: newOrder,
       ...additionalData
     });
   };
 
+  /**
+   * Toggles the completion status of a task
+   * @param {number} taskId - ID of the task to toggle
+   */
   const toggleTaskCompletion = (taskId) => {
     const task = tasks.find(t => t.id === taskId);
     if (task) {
@@ -164,6 +187,10 @@ const Home = () => {
     }
   };
 
+  /**
+   * Deletes a task
+   * @param {number} taskId - ID of the task to delete
+   */
   const deleteTask = (taskId) => {
     deleteTaskMutation.mutate(taskId);
     if (selectedTaskId === taskId) {
@@ -171,10 +198,18 @@ const Home = () => {
     }
   };
 
+  /**
+   * Selects a task for viewing/editing in the Task Details panel
+   * @param {number} taskId - ID of the task to select
+   */
   const selectTask = (taskId) => {
     setSelectedTaskId(taskId === selectedTaskId ? null : taskId);
   };
 
+  /**
+   * Updates the active filter for tasks
+   * @param {string} filter - New filter to apply
+   */
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
   };

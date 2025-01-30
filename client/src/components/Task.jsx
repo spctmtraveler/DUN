@@ -1,9 +1,29 @@
+/**
+ * Task.jsx
+ * Renders an individual task item with its controls and interactions.
+ * Includes completion checkbox, title, date picker, and delete button.
+ */
+
 import React from 'react';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
+/**
+ * Task Component
+ * @param {Object} props
+ * @param {number} props.id - Task ID
+ * @param {string} props.title - Task title
+ * @param {string} props.section - Task section (Triage/A/B/C)
+ * @param {boolean} props.completed - Task completion status
+ * @param {boolean} props.selected - Whether the task is currently selected
+ * @param {string} props.revisitDate - ISO date string for task revisit date
+ * @param {Function} props.onMoveTask - Callback for moving tasks
+ * @param {Function} props.onToggleCompletion - Callback for toggling completion
+ * @param {Function} props.onDeleteTask - Callback for deleting tasks
+ * @param {Function} props.onSelectTask - Callback for selecting tasks
+ */
 const Task = ({ 
   id, 
   title, 
@@ -16,12 +36,21 @@ const Task = ({
   onDeleteTask,
   onSelectTask 
 }) => {
+  /**
+   * Handles clicking on the task
+   * Prevents selection when clicking controls
+   */
   const handleClick = (e) => {
     if (!e.target.closest('.task-controls, .task-checkbox')) {
       onSelectTask(id);
     }
   };
 
+  /**
+   * Formats the revisit date for display
+   * Shows 'Today' or 'Tomorrow' for those dates
+   * Otherwise shows MM/dd format
+   */
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = addDays(parseISO(dateString), 1);
@@ -64,21 +93,17 @@ const Task = ({
                 <CalendarComponent
                   mode="single"
                   selected={revisitDate ? addDays(parseISO(revisitDate), 1) : undefined}
-                  onSelect={(date, e) => {
+                  onSelect={(date) => {
                     if (date) {
                       const newDate = new Date(date);
                       newDate.setDate(newDate.getDate() - 1); 
                       newDate.setHours(12, 0, 0, 0);
                       onMoveTask(
-                        { id, section, order: 0 },
+                        { id, title, section },
                         section,
-                        null,
+                        undefined,
                         { revisitDate: newDate.toISOString() }
                       );
-                      const popoverTrigger = document.querySelector('[data-state="open"]');
-                      if (popoverTrigger) {
-                        popoverTrigger.click();
-                      }
                     }
                   }}
                   initialFocus
