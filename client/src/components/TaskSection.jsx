@@ -36,8 +36,8 @@ const TaskSection = ({
       const oldIndex = tasks.findIndex(task => task.id === active.id);
       const newIndex = tasks.findIndex(task => task.id === over.id);
 
-      const newOrder = arrayMove(tasks, oldIndex, newIndex);
-      onReorderTasks(id, newOrder);
+      const reorderedTasks = arrayMove(tasks, oldIndex, newIndex);
+      onReorderTasks(id, reorderedTasks);
     }
   };
 

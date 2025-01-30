@@ -69,8 +69,9 @@ const Panel = ({
   const renderTaskSections = () => {
     const sections = ['Triage', 'A', 'B', 'C'];
     return sections.map(section => {
-      const sectionTasks = tasks.filter(task => task.section === section)
-        .sort((a, b) => a.order - b.order);
+      // Don't sort here - let DnD Kit handle the order
+      const sectionTasks = tasks.filter(task => task.section === section);
+
       return (
         <TaskSection
           key={section}
@@ -81,7 +82,7 @@ const Panel = ({
           onDeleteTask={onDeleteTask}
           onSelectTask={onSelectTask}
           selectedTaskId={selectedTaskId}
-          onReorderTasks={onReorderTasks}  // Make sure we pass this prop
+          onReorderTasks={onReorderTasks}
         />
       );
     });
