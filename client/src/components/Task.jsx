@@ -69,7 +69,10 @@ const Task = ({
   // Set up drag source
   const [{ isDragging }, drag, preview] = useDrag({
     type: TASK_DND_TYPE,
-    item: { id, index, title, completed, revisitDate, order },
+    item: () => {
+      console.log('Drag started:', { id, index, title, order });
+      return { id, index, title, completed, revisitDate, order };
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -79,13 +82,28 @@ const Task = ({
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: TASK_DND_TYPE,
     hover(item, monitor) {
-      if (!ref.current) return;
+      if (!ref.current) {
+        console.log('No ref found for drop target');
+        return;
+      }
 
       const dragIndex = item.index;
       const hoverIndex = index;
 
       // Don't replace items with themselves
-      if (dragIndex === hoverIndex) return;
+      if (dragIndex === hoverIndex) {
+        console.log('Same index, skipping hover:', dragIndex);
+        return;
+      }
+
+      console.log('Hover detected:', {
+        dragIndex,
+        hoverIndex,
+        dragId: item.id,
+        hoverId: id,
+        dragOrder: item.order,
+        hoverOrder: order
+      });
 
       // Get rectangle on screen
       const hoverBoundingRect = ref.current?.getBoundingClientRect();
@@ -99,11 +117,19 @@ const Task = ({
       // Get pixels to the top
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
+      console.log('Position calculations:', {
+        hoverMiddleY,
+        hoverClientY,
+        shouldSkip: (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) ||
+                   (dragIndex > hoverIndex && hoverClientY > hoverMiddleY)
+      });
+
       // Only perform the move when the mouse has crossed half of the items height
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
       if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
       // Time to actually perform the action
+      console.log('Calling moveTask:', { dragIndex, hoverIndex });
       moveTask(dragIndex, hoverIndex);
 
       // Note: we're mutating the monitor item here!

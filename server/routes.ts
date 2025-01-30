@@ -37,15 +37,21 @@ export function registerRoutes(app: Express): Server {
   // Update task
   app.patch("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
+    console.log('📝 PATCH /api/tasks/:id received:', { id, body: req.body });
+
     try {
+      console.log('🔍 Finding existing task:', id);
       const [existingTask] = await db
         .select()
         .from(tasks)
         .where(eq(tasks.id, parseInt(id)));
 
       if (!existingTask) {
+        console.log('❌ Task not found:', id);
         return res.status(404).json({ message: "Task not found" });
       }
+
+      console.log('✅ Found existing task:', existingTask);
 
       // Initialize update data with existing values to prevent null
       const updateData: Partial<InsertTask> = {
@@ -53,8 +59,18 @@ export function registerRoutes(app: Express): Server {
       };
 
       // Update order if provided and valid
-      if (typeof req.body.order === 'number' && !isNaN(req.body.order)) {
-        updateData.order = req.body.order;
+      if (req.body.order !== undefined) {
+        console.log('📊 Processing order update:', {
+          currentOrder: existingTask.order,
+          newOrder: req.body.order,
+          isValid: typeof req.body.order === 'number' && !isNaN(req.body.order)
+        });
+
+        if (typeof req.body.order === 'number' && !isNaN(req.body.order)) {
+          updateData.order = req.body.order;
+        } else {
+          console.warn('⚠️ Invalid order value received:', req.body.order);
+        }
       }
 
       // Update other fields if provided
@@ -77,7 +93,7 @@ export function registerRoutes(app: Express): Server {
       // Always update the timestamp
       updateData.updatedAt = new Date();
 
-      console.log('Updating task:', { id, updateData });
+      console.log('📝 Updating task with data:', updateData);
 
       const [updatedTask] = await db
         .update(tasks)
@@ -86,13 +102,14 @@ export function registerRoutes(app: Express): Server {
         .returning();
 
       if (!updatedTask) {
+        console.log('❌ Task not found after update:', id);
         return res.status(404).json({ message: "Task not found" });
       }
 
-      console.log('Task updated:', updatedTask);
+      console.log('✅ Task updated successfully:', updatedTask);
       res.json(updatedTask);
     } catch (error) {
-      console.error("Error updating task:", error);
+      console.error('💥 Error updating task:', error);
       res.status(500).json({ message: "Error updating task" });
     }
   });
