@@ -23,7 +23,7 @@ export function registerRoutes(app: Express): Server {
         title: req.body.title,
         section: req.body.section || "Triage",
         completed: false,
-        order: typeof req.body.order === 'number' ? req.body.order : 1000, // Ensure default order
+        order: req.body.order,
       };
 
       const [newTask] = await db.insert(tasks).values(taskData).returning();
@@ -37,63 +37,32 @@ export function registerRoutes(app: Express): Server {
   // Update task
   app.patch("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
-    console.log('📝 PATCH /api/tasks/:id received:', { id, body: req.body });
-
     try {
-      console.log('🔍 Finding existing task:', id);
+      // Create an update object only with the fields that are present in the request
+      const updateData: Partial<InsertTask> = {};
+
       const [existingTask] = await db
         .select()
         .from(tasks)
         .where(eq(tasks.id, parseInt(id)));
 
       if (!existingTask) {
-        console.log('❌ Task not found:', id);
         return res.status(404).json({ message: "Task not found" });
       }
 
-      console.log('✅ Found existing task:', existingTask);
-
-      // Initialize update data with existing values to prevent null
-      const updateData: Partial<InsertTask> = {
-        order: existingTask.order // Initialize with existing order
-      };
-
-      // Update order if provided and valid
-      if (req.body.order !== undefined) {
-        console.log('📊 Processing order update:', {
-          currentOrder: existingTask.order,
-          newOrder: req.body.order,
-          isValid: typeof req.body.order === 'number' && !isNaN(req.body.order)
-        });
-
-        if (typeof req.body.order === 'number' && !isNaN(req.body.order)) {
-          updateData.order = req.body.order;
-        } else {
-          console.warn('⚠️ Invalid order value received:', req.body.order);
-        }
-      }
-
-      // Update other fields if provided
-      if (typeof req.body.completed === 'boolean') {
+      // Only update completion status if provided
+      if (req.body.completed !== undefined) {
         updateData.completed = req.body.completed;
       }
-
-      if (req.body.overview !== undefined) {
-        updateData.overview = req.body.overview;
-      }
-
-      if (req.body.details !== undefined) {
-        updateData.details = req.body.details;
-      }
-
+      // Only update these fields if explicitly provided
+      if (req.body.overview !== undefined) updateData.overview = req.body.overview;
+      updateData.details = req.body.details ?? existingTask.details;
       if (req.body.revisitDate !== undefined) {
         updateData.revisitDate = new Date(req.body.revisitDate);
       }
 
-      // Always update the timestamp
+      // Always update the updatedAt timestamp
       updateData.updatedAt = new Date();
-
-      console.log('📝 Updating task with data:', updateData);
 
       const [updatedTask] = await db
         .update(tasks)
@@ -102,14 +71,11 @@ export function registerRoutes(app: Express): Server {
         .returning();
 
       if (!updatedTask) {
-        console.log('❌ Task not found after update:', id);
         return res.status(404).json({ message: "Task not found" });
       }
-
-      console.log('✅ Task updated successfully:', updatedTask);
       res.json(updatedTask);
     } catch (error) {
-      console.error('💥 Error updating task:', error);
+      console.error("Error updating task:", error);
       res.status(500).json({ message: "Error updating task" });
     }
   });

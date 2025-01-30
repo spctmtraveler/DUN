@@ -10,7 +10,6 @@ import { startOfDay, endOfDay, addDays, startOfWeek, endOfWeek, startOfMonth, en
 import Banner from '../components/Banner';
 import PanelContainer from '../components/PanelContainer';
 import config from '../config.json';
-import DragDropProvider from '../components/DndProvider';
 
 const Home = () => {
   // Panel visibility state - initialized from config
@@ -148,12 +147,11 @@ const Home = () => {
 
     // Calculate the order value for the new task (max + 1000)
     const maxOrder = tasks.length ? Math.max(...tasks.map(t => t.order)) : 0;
-    const newOrder = (maxOrder ?? 0) + 1000;
     const newTask = {
       title: taskTitle,
       section: 'Triage',
       completed: false,
-      order: newOrder
+      order: maxOrder + 1000
     };
 
     createTaskMutation.mutate(newTask);
@@ -198,24 +196,22 @@ const Home = () => {
   };
 
   return (
-    <DragDropProvider>
-      <div className="app-container">
-        <Banner 
-          visiblePanels={visiblePanels} 
-          togglePanel={togglePanel} 
-          onAddTask={handleAddTask}
-          onFilterChange={handleFilterChange}
-        />
-        <PanelContainer 
-          visiblePanels={visiblePanels} 
-          tasks={filteredTasks}
-          onToggleCompletion={toggleTaskCompletion}
-          onDeleteTask={deleteTask}
-          onSelectTask={selectTask}
-          selectedTaskId={selectedTaskId}
-        />
-      </div>
-    </DragDropProvider>
+    <div className="app-container">
+      <Banner 
+        visiblePanels={visiblePanels} 
+        togglePanel={togglePanel} 
+        onAddTask={handleAddTask}
+        onFilterChange={handleFilterChange}
+      />
+      <PanelContainer 
+        visiblePanels={visiblePanels} 
+        tasks={filteredTasks}
+        onToggleCompletion={toggleTaskCompletion}
+        onDeleteTask={deleteTask}
+        onSelectTask={selectTask}
+        selectedTaskId={selectedTaskId}
+      />
+    </div>
   );
 };
 
