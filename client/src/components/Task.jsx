@@ -97,12 +97,10 @@ const Task = ({
                       const newDate = new Date(date);
                       newDate.setDate(newDate.getDate() - 1); 
                       newDate.setHours(12, 0, 0, 0);
-                      onMoveTask(
-                        { id, title, section },
-                        section,
-                        undefined,
-                        { revisitDate: newDate.toISOString() }
-                      );
+                      updateTaskMutation.mutate({
+                        id,
+                        revisitDate: newDate.toISOString()
+                      });
                     }
                   }}
                   initialFocus
