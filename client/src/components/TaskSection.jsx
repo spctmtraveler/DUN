@@ -69,30 +69,45 @@ const TaskSection = ({
 
     // Calculate new order value
     let newOrder;
+
+    // Ensure we have valid order values
+    const draggedOrder = parseFloat(draggedTask.order) || 0;
+    const targetOrder = parseFloat(targetTask.order) || 0;
+
     if (hoverIndex === 0) {
-      // Moving to the start: use half of first task's order
-      newOrder = Math.max(1, targetTask.order / 2);
-      console.log('📏 Calculating start position:', { newOrder, targetOrder: targetTask.order });
+      // Moving to the start: ensure we have a positive number greater than 0
+      newOrder = Math.max(1, targetOrder / 2);
+      console.log('📏 Calculating start position:', { newOrder, targetOrder });
     } else if (hoverIndex === tasks.length - 1) {
-      // Moving to the end: add 1000 to last task's order
-      newOrder = targetTask.order + 1000;
-      console.log('📏 Calculating end position:', { newOrder, targetOrder: targetTask.order });
+      // Moving to the end: add 1000 to ensure it's bigger than the last task
+      newOrder = targetOrder + 1000;
+      console.log('📏 Calculating end position:', { newOrder, targetOrder });
     } else {
-      // Moving between tasks: use midpoint
+      // Moving between tasks: calculate midpoint between previous and target tasks
       const prevTask = tasks[hoverIndex - 1];
-      newOrder = (prevTask.order + targetTask.order) / 2;
+      const prevOrder = parseFloat(prevTask.order) || 0;
+
+      // Ensure we have valid numbers before calculation
+      if (prevOrder > 0 && targetOrder > 0) {
+        newOrder = (prevOrder + targetOrder) / 2;
+      } else {
+        // Fallback if orders are invalid: place between with fixed spacing
+        newOrder = targetOrder + 500;
+      }
+
       console.log('📏 Calculating middle position:', { 
         newOrder, 
-        prevOrder: prevTask.order, 
-        targetOrder: targetTask.order 
+        prevOrder,
+        targetOrder,
+        calculation: `(${prevOrder} + ${targetOrder}) / 2`
       });
     }
 
     // Ensure order is a valid number
-    if (typeof newOrder === 'number' && !isNaN(newOrder)) {
+    if (typeof newOrder === 'number' && !isNaN(newOrder) && newOrder > 0) {
       console.log('✨ Updating task order:', {
         taskId: draggedTask.id,
-        oldOrder: draggedTask.order,
+        oldOrder: draggedOrder,
         newOrder,
         dragIndex,
         hoverIndex
@@ -103,7 +118,11 @@ const TaskSection = ({
         order: newOrder
       });
     } else {
-      console.error('❌ Invalid order calculation:', { newOrder });
+      console.error('❌ Invalid order calculation:', { 
+        newOrder,
+        draggedOrder,
+        targetOrder
+      });
     }
   };
 
