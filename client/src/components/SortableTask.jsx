@@ -4,6 +4,8 @@ import { CSS } from '@dnd-kit/utilities';
 import Task from './Task';
 
 const SortableTask = ({ id, ...props }) => {
+  console.log(`[SortableTask ${id}] Rendering`);
+
   const {
     attributes,
     listeners,
@@ -13,6 +15,8 @@ const SortableTask = ({ id, ...props }) => {
     isDragging,
   } = useSortable({ id });
 
+  console.log(`[SortableTask ${id}] isDragging: ${isDragging}, transform:`, transform);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -21,9 +25,15 @@ const SortableTask = ({ id, ...props }) => {
     zIndex: isDragging ? 999 : 1,
   };
 
+  console.log(`[SortableTask ${id}] Applied style:`, style);
+
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <Task id={id} dragHandleProps={listeners} {...props} />
+      <Task 
+        id={id} 
+        dragHandleProps={listeners} 
+        {...props} 
+      />
     </div>
   );
 };

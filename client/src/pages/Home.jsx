@@ -22,42 +22,51 @@ const Home = () => {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
-    staleTime: 500, // Prevent aggressive refetching
+    staleTime: 500,
   });
 
   // Task mutations remain unchanged except updateTaskMutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, ...data }) => {
+      console.log(`[updateTaskMutation] Starting update for task ${id}:`, data);
       const res = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to update task');
-      return res.json();
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(`[updateTaskMutation] Failed to update task ${id}:`, errorText);
+        throw new Error(`Failed to update task: ${errorText}`);
+      }
+      const result = await res.json();
+      console.log(`[updateTaskMutation] Successfully updated task ${id}:`, result);
+      return result;
     },
     onMutate: async ({ id, order }) => {
-      // Cancel outgoing refetches
+      console.log(`[updateTaskMutation.onMutate] Starting optimistic update for task ${id} with order ${order}`);
       await queryClient.cancelQueries({ queryKey: ['/api/tasks'] });
 
-      // Snapshot the previous value
       const previousTasks = queryClient.getQueryData(['/api/tasks']);
+      console.log('[updateTaskMutation.onMutate] Previous tasks:', previousTasks);
 
-      // Optimistically update to the new value
-      queryClient.setQueryData(['/api/tasks'], old => 
-        old.map(task => 
+      queryClient.setQueryData(['/api/tasks'], old => {
+        const updated = old.map(task => 
           task.id === id ? { ...task, order } : task
-        )
-      );
+        );
+        console.log('[updateTaskMutation.onMutate] Updated tasks:', updated);
+        return updated;
+      });
 
       return { previousTasks };
     },
-    onError: (err, newTodo, context) => {
-      // Rollback on error
+    onError: (err, variables, context) => {
+      console.error('[updateTaskMutation.onError] Error updating task:', err);
+      console.log('[updateTaskMutation.onError] Rolling back to previous state:', context.previousTasks);
       queryClient.setQueryData(['/api/tasks'], context.previousTasks);
     },
     onSettled: () => {
-      // Always refetch after error or success
+      console.log('[updateTaskMutation.onSettled] Invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     },
   });
@@ -92,25 +101,32 @@ const Home = () => {
 
   // Handle reordering tasks within a section
   const handleReorderTasks = async (sectionId, reorderedTasks) => {
+    console.log(`[handleReorderTasks] Starting reorder in section ${sectionId}`);
+    console.log('[handleReorderTasks] Reordered tasks:', reorderedTasks);
+
     try {
       // Calculate new order values with consistent spacing
       const updates = reorderedTasks.map((task, index) => ({
         id: task.id,
-        order: (index + 1) * 10000 // Use larger gaps (10000) to prevent floating point issues
+        order: (index + 1) * 10000
       }));
+
+      console.log('[handleReorderTasks] Calculated updates:', updates);
 
       // Update tasks in parallel with optimistic updates
       await Promise.all(
-        updates.map(update => 
-          updateTaskMutation.mutateAsync({
+        updates.map(update => {
+          console.log(`[handleReorderTasks] Updating task ${update.id} with order ${update.order}`);
+          return updateTaskMutation.mutateAsync({
             id: update.id,
             order: update.order
-          })
-        )
+          });
+        })
       );
+
+      console.log('[handleReorderTasks] All updates completed successfully');
     } catch (error) {
-      console.error('Error reordering tasks:', error);
-      // Error handling is managed by the mutation
+      console.error('[handleReorderTasks] Error reordering tasks:', error);
     }
   };
 
