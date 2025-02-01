@@ -34,16 +34,25 @@ const PanelContainer = ({
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    console.log('[DragEnd]', { active, over });
 
-    if (!over) return;
+    if (!active || !over) return;
 
     const activeId = parseInt(active.id);
     const activeTask = tasks.find(t => t.id === activeId);
 
     if (!activeTask) return;
 
-    // Extract section ID from the over.id (format: section-{sectionId})
-    const targetSection = over.id.replace('section-', '');
+    // Extract section ID from over.id (format: "section-{sectionId}")
+    const overId = over.id?.toString() || '';
+    const targetSection = overId.startsWith('section-') ? overId.split('-')[1] : null;
+
+    if (!targetSection) {
+      console.log('[DragEnd] Invalid target section:', overId);
+      return;
+    }
+
+    console.log(`[DragEnd] Moving task from index ${activeTask.section} to ${targetSection}`);
 
     // Get tasks in target section
     const targetSectionTasks = tasks
@@ -64,7 +73,9 @@ const PanelContainer = ({
       updatedTasks.push({ ...activeTask, section: targetSection, order: newOrder });
     }
 
-    console.log(`[PanelContainer] Moving task ${activeId} to section ${targetSection} with order ${newOrder}`);
+    console.log(`[DragEnd] Current task orders:`, targetSectionTasks.map(t => t.order));
+    console.log(`[DragEnd] New task orders:`, updatedTasks.map(t => t.order));
+
     onReorderTasks(targetSection, updatedTasks);
   };
 
