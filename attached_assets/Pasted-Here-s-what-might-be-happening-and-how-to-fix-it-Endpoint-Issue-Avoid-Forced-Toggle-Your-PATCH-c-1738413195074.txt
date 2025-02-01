@@ -1,0 +1,62 @@
+Here's what might be happening and how to fix it:
+
+Endpoint Issue
+
+Avoid Forced Toggle: Your PATCH code always toggles completion.
+Override Order: It resets order instead of using the passed value.
+Fix: Update the endpoint to use request fields if provided.
+Example Update:
+typescript
+Copy
+app.patch("/api/tasks/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [existingTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, parseInt(id)));
+    if (!existingTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    const updateData: Partial<InsertTask> = {
+      title: req.body.title ?? existingTask.title,
+      section: req.body.section ?? existingTask.section,
+      completed: req.body.hasOwnProperty("completed")
+        ? req.body.completed
+        : existingTask.completed,
+      order: req.body.hasOwnProperty("order")
+        ? req.body.order
+        : existingTask.order,
+      overview: req.body.overview ?? existingTask.overview,
+      details: req.body.details ?? existingTask.details,
+      revisitDate: req.body.revisitDate !== undefined
+        ? new Date(req.body.revisitDate)
+        : existingTask.revisitDate,
+      updatedAt: new Date(),
+    };
+    const [updatedTask] = await db
+      .update(tasks)
+      .set(updateData)
+      .where(eq(tasks.id, parseInt(id)))
+      .returning();
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res.json(updatedTask);
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({ message: "Error updating task" });
+  }
+});
+Drag-and-Drop UI
+
+Drop Zone Activation: Make sure your drop zones call e.preventDefault() in onDragOver.
+TaskSection Setup: Verify that TaskSection (or similar) implements onDragStart, onDragOver, and onDrop events correctly.
+Quick Tip:
+In onDragOver:
+jsx
+Copy
+const handleDragOver = (e) => {
+  e.preventDefault(); // essential for drop zone activation!
+};
+Data Sent: Confirm that onDrop sends proper section and order values via onMoveTask.
