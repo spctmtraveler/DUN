@@ -5,7 +5,6 @@ import { tasks, type InsertTask } from "@db/schema";
 import { eq } from "drizzle-orm";
 
 export function registerRoutes(app: Express): Server {
-  // Get all tasks
   app.get("/api/tasks", async (_req, res) => {
     try {
       const allTasks = await db.select().from(tasks).orderBy(tasks.order);
@@ -16,7 +15,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Create new task
   app.post("/api/tasks", async (req, res) => {
     try {
       const taskData: InsertTask = {
@@ -34,13 +32,9 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Update task
   app.patch("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
     try {
-      // Create an update object only with the fields that are present in the request
-      const updateData: Partial<InsertTask> = {};
-
       const [existingTask] = await db
         .select()
         .from(tasks)
@@ -50,19 +44,25 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      // Only update completion status if provided
-      if (req.body.completed !== undefined) {
-        updateData.completed = req.body.completed;
-      }
-      // Only update these fields if explicitly provided
-      if (req.body.overview !== undefined) updateData.overview = req.body.overview;
-      updateData.details = req.body.details ?? existingTask.details;
-      if (req.body.revisitDate !== undefined) {
-        updateData.revisitDate = new Date(req.body.revisitDate);
-      }
-
-      // Always update the updatedAt timestamp
-      updateData.updatedAt = new Date();
+      const updateData: Partial<InsertTask> = {
+        // Only update if provided, else preserve current value
+        title: req.body.title ?? existingTask.title,
+        section: req.body.section ?? existingTask.section,
+        completed:
+          req.body.hasOwnProperty("completed")
+            ? req.body.completed
+            : existingTask.completed,
+        order: req.body.hasOwnProperty("order")
+          ? req.body.order
+          : existingTask.order,
+        overview: req.body.overview ?? existingTask.overview,
+        details: req.body.details ?? existingTask.details,
+        revisitDate:
+          req.body.revisitDate !== undefined
+            ? new Date(req.body.revisitDate)
+            : existingTask.revisitDate,
+        updatedAt: new Date(),
+      };
 
       const [updatedTask] = await db
         .update(tasks)
@@ -80,7 +80,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Delete task
   app.delete("/api/tasks/:id", async (req, res) => {
     const { id } = req.params;
     try {

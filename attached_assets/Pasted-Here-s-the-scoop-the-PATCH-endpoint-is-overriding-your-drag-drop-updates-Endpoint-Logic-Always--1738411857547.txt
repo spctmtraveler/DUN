@@ -1,0 +1,76 @@
+Here’s the scoop – the PATCH endpoint is overriding your drag‐drop updates!
+
+Endpoint Logic
+
+Always Toggles: Code flips completed regardless of request.
+Preserves Order: Always resets order to the existing value.
+Client Call
+
+Drag & Drop: Sends new section/order data.
+Ignored Data: Server code never applies these updates.
+Fix It
+
+Update Check: Only update fields provided in req.body.
+Separate Paths: Differentiate toggle from drag‐drop updates.
+Test Steps
+
+Drag Task: Confirm new position stays.
+DB Verify: Ensure database reflects changes.
+Try replacing your PATCH endpoint with something like:
+
+typescript
+Copy
+app.patch("/api/tasks/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [existingTask] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, parseInt(id)));
+
+    if (!existingTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    const updateData: Partial<InsertTask> = {
+      // Only update if provided, else preserve current value
+      title: req.body.title ?? existingTask.title,
+      section: req.body.section ?? existingTask.section,
+      completed:
+        req.body.hasOwnProperty("completed")
+          ? req.body.completed
+          : existingTask.completed,
+      order: req.body.hasOwnProperty("order")
+        ? req.body.order
+        : existingTask.order,
+      overview: req.body.overview ?? existingTask.overview,
+      details: req.body.details ?? existingTask.details,
+      revisitDate:
+        req.body.revisitDate !== undefined
+          ? new Date(req.body.revisitDate)
+          : existingTask.revisitDate,
+      updatedAt: new Date(),
+    };
+
+    const [updatedTask] = await db
+      .update(tasks)
+      .set(updateData)
+      .where(eq(tasks.id, parseInt(id)))
+      .returning();
+
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res.json(updatedTask);
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({ message: "Error updating task" });
+  }
+});
+Give that a whirl and let me know how it goes!
+
+
+
+
+
+
