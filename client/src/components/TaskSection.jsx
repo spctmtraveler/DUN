@@ -1,8 +1,6 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ChevronRight } from 'lucide-react';
-import {
-  useSortable
-} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
 import { 
   SortableContext, 
   verticalListSortingStrategy,
@@ -23,7 +21,7 @@ const TaskSection = ({
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Make the section droppable
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver, active } = useDroppable({
     id: `section-${id}`,
   });
 
@@ -37,13 +35,17 @@ const TaskSection = ({
   sortedTasks.forEach(t => console.log(`[TaskSection ${id}] Task ${t.id}: order=${t.order}`));
 
   return (
-    <div className="task-section" data-section-id={id} ref={setNodeRef}>
+    <div 
+      className={`task-section ${isOver ? 'drop-target' : ''}`} 
+      data-section-id={id} 
+      ref={setNodeRef}
+    >
       <div className="section-header" onClick={() => setIsExpanded(!isExpanded)}>
         <ChevronRight className={`section-caret ${isExpanded ? 'rotate-90' : ''}`} size={16} />
         <span>{title}</span>
       </div>
       {isExpanded && (
-        <div className="section-content">
+        <div className={`section-content ${isOver ? 'receiving' : ''}`}>
           <SortableContext 
             items={sortedTasks.map(task => task.id)}
             strategy={verticalListSortingStrategy}
@@ -58,6 +60,9 @@ const TaskSection = ({
                 selected={task.id === selectedTaskId}
               />
             ))}
+            {isOver && sortedTasks.length === 0 && (
+              <div className="drop-indicator">Drop here</div>
+            )}
           </SortableContext>
         </div>
       )}
