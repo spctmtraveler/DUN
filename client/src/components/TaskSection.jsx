@@ -37,8 +37,9 @@ const TaskSection = ({
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
+      // Reduce activation constraints to make dragging easier
       activationConstraint: {
-        distance: 8,
+        distance: 1, // Reduce required movement distance
         tolerance: 5,
       },
     }),

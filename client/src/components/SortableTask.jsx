@@ -29,7 +29,6 @@ const SortableTask = ({ id, ...props }) => {
     opacity: isDragging ? 0.4 : 1,
     position: 'relative',
     zIndex: isDragging ? 999 : 1,
-    touchAction: 'none',
   };
 
   console.log(`[SortableTask ${id}] Applied style:`, style);
