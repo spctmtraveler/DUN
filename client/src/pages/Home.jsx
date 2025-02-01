@@ -112,7 +112,19 @@ const Home = () => {
 
       console.log('[handleReorderTasks] Calculated updates:', updates);
 
-      // Update tasks in parallel with optimistic updates
+      // First, update the optimistic state
+      queryClient.setQueryData(['/api/tasks'], old => {
+        const updated = [...old];
+        updates.forEach(update => {
+          const index = updated.findIndex(t => t.id === update.id);
+          if (index !== -1) {
+            updated[index] = { ...updated[index], order: update.order };
+          }
+        });
+        return updated;
+      });
+
+      // Then update tasks in parallel
       await Promise.all(
         updates.map(update => {
           console.log(`[handleReorderTasks] Updating task ${update.id} with order ${update.order}`);
@@ -126,53 +138,10 @@ const Home = () => {
       console.log('[handleReorderTasks] All updates completed successfully');
     } catch (error) {
       console.error('[handleReorderTasks] Error reordering tasks:', error);
+      // Invalidate queries to refresh the state
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     }
   };
-
-  const getFilteredTasks = () => {
-    if (activeFilter === 'all') return tasks;
-    if (activeFilter === 'triage') return tasks.filter(task => task.section === 'Triage');
-
-    const today = new Date();
-    const intervals = {
-      today: {
-        start: startOfDay(today),
-        end: endOfDay(today)
-      },
-      tomorrow: {
-        start: startOfDay(addDays(today, 1)),
-        end: endOfDay(addDays(today, 1))
-      },
-      thisWeek: {
-        start: startOfWeek(today),
-        end: endOfWeek(today)
-      },
-      nextWeek: {
-        start: startOfWeek(addDays(today, 7)),
-        end: endOfWeek(addDays(today, 7))
-      },
-      thisMonth: {
-        start: startOfMonth(today),
-        end: endOfMonth(today)
-      },
-      nextMonth: {
-        start: startOfMonth(addDays(endOfMonth(today), 1)),
-        end: endOfMonth(addDays(endOfMonth(today), 1))
-      }
-    };
-
-    if (intervals[activeFilter]) {
-      return tasks.filter(task => {
-        if (!task.revisitDate) return false;
-        const taskDate = parseISO(task.revisitDate);
-        return isWithinInterval(taskDate, intervals[activeFilter]);
-      });
-    }
-
-    return tasks;
-  };
-
-  const filteredTasks = getFilteredTasks();
 
   const togglePanel = (panelId) => {
     setVisiblePanels(prev => ({
@@ -227,7 +196,7 @@ const Home = () => {
       />
       <PanelContainer 
         visiblePanels={visiblePanels} 
-        tasks={filteredTasks}
+        tasks={tasks}
         onToggleCompletion={toggleTaskCompletion}
         onDeleteTask={deleteTask}
         onSelectTask={selectTask}

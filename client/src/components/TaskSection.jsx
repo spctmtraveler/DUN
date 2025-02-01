@@ -7,12 +7,12 @@ import {
   PointerSensor, 
   useSensor, 
   useSensors,
-  defaultDropAnimationSideEffects
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import { 
   SortableContext, 
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy 
+  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { arrayMove } from '@dnd-kit/sortable';
 import SortableTask from './SortableTask';
