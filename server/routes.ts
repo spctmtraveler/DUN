@@ -44,23 +44,21 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Task not found" });
       }
 
+      // Build update object conditionally
       const updateData: Partial<InsertTask> = {
-        // Only update if provided, else preserve current value
         title: req.body.title ?? existingTask.title,
         section: req.body.section ?? existingTask.section,
-        completed:
-          req.body.hasOwnProperty("completed")
-            ? req.body.completed
-            : existingTask.completed,
+        completed: req.body.hasOwnProperty("completed")
+          ? req.body.completed
+          : existingTask.completed,
         order: req.body.hasOwnProperty("order")
           ? req.body.order
           : existingTask.order,
         overview: req.body.overview ?? existingTask.overview,
         details: req.body.details ?? existingTask.details,
-        revisitDate:
-          req.body.revisitDate !== undefined
-            ? new Date(req.body.revisitDate)
-            : existingTask.revisitDate,
+        revisitDate: req.body.revisitDate !== undefined
+          ? new Date(req.body.revisitDate)
+          : existingTask.revisitDate,
         updatedAt: new Date(),
       };
 
@@ -73,6 +71,7 @@ export function registerRoutes(app: Express): Server {
       if (!updatedTask) {
         return res.status(404).json({ message: "Task not found" });
       }
+
       res.json(updatedTask);
     } catch (error) {
       console.error("Error updating task:", error);
