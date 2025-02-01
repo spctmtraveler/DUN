@@ -22,8 +22,8 @@ const TaskSection = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Make the section droppable
-  const { setNodeRef } = useDroppable({
+  // Make the section droppable with visual feedback
+  const { setNodeRef, isOver } = useDroppable({
     id: `section-${id}`,
   });
 
@@ -37,7 +37,11 @@ const TaskSection = ({
   sortedTasks.forEach(t => console.log(`[TaskSection ${id}] Task ${t.id}: order=${t.order}`));
 
   return (
-    <div className="task-section" data-section-id={id} ref={setNodeRef}>
+    <div 
+      className={`task-section ${isOver ? 'bg-secondary/20' : ''}`} 
+      data-section-id={id} 
+      ref={setNodeRef}
+    >
       <div className="section-header" onClick={() => setIsExpanded(!isExpanded)}>
         <ChevronRight className={`section-caret ${isExpanded ? 'rotate-90' : ''}`} size={16} />
         <span>{title}</span>

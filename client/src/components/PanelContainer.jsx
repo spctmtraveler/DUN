@@ -44,8 +44,9 @@ const PanelContainer = ({
     if (!activeTask) return;
 
     // Extract section ID from over.id (format: "section-{sectionId}")
-    const overId = over.id?.toString() || '';
-    const targetSection = overId.startsWith('section-') ? overId.split('-')[1] : null;
+    const overId = String(over.id);
+    const match = overId.match(/^section-(.+)$/);
+    const targetSection = match ? match[1] : null;
 
     if (!targetSection) {
       console.log('[DragEnd] Invalid target section:', overId);
