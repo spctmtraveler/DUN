@@ -15,7 +15,7 @@ const Home = () => {
   // Increase stale time to prevent unnecessary refetches
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
-    staleTime: 5000, // Increase stale time to 5 seconds
+    staleTime: 5000,
   });
 
   const updateTaskMutation = useMutation({
@@ -35,18 +35,13 @@ const Home = () => {
     },
     onMutate: async ({ id, ...data }) => {
       console.log(`[updateTaskMutation.onMutate] Starting optimistic update for task ${id}:`, data);
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['/api/tasks'] });
-
-      // Snapshot the previous value
       const previousTasks = queryClient.getQueryData(['/api/tasks']);
 
-      // Optimistically update to the new value
-      queryClient.setQueryData(['/api/tasks'], old => old.map(task => 
-        task.id === id ? { ...task, ...data } : task
-      ));
+      queryClient.setQueryData(['/api/tasks'], old => 
+        old.map(task => task.id === id ? { ...task, ...data } : task)
+      );
 
-      // Return a context object with the snapshotted value
       return { previousTasks };
     },
     onError: (err, variables, context) => {
@@ -56,7 +51,6 @@ const Home = () => {
       }
     },
     onSettled: () => {
-      // Only invalidate after the mutation has settled
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
       }, 1000);
@@ -70,6 +64,7 @@ const Home = () => {
       // Calculate new orders with larger gaps to prevent decimal issues
       const updates = reorderedTasks.map((task, index) => ({
         id: task.id,
+        section: sectionId, // Include section in update
         order: (index + 1) * 10000
       }));
 
@@ -79,23 +74,27 @@ const Home = () => {
         updates.forEach(update => {
           const index = updated.findIndex(t => t.id === update.id);
           if (index !== -1) {
-            updated[index] = { ...updated[index], order: update.order };
+            updated[index] = { 
+              ...updated[index], 
+              order: update.order,
+              section: update.section
+            };
           }
         });
-        return updated.sort((a, b) => a.order - b.order);
+        return updated;
       });
 
       // Update tasks sequentially to maintain order
       for (const update of updates) {
         await updateTaskMutation.mutateAsync({
           id: update.id,
+          section: update.section,
           order: update.order
         });
       }
 
     } catch (error) {
       console.error('[handleReorderTasks] Error:', error);
-      // Force refresh from server on error
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     }
   };
@@ -140,7 +139,6 @@ const Home = () => {
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
   };
-
 
   return (
     <div className="app-container">

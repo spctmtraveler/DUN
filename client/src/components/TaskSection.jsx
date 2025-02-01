@@ -41,12 +41,11 @@ const TaskSection = ({
     })
   );
 
-  const shouldEnableDragAndDrop = id === 'Triage';
-
   // Memoize sorted tasks to prevent unnecessary re-renders
   const sortedTasks = useMemo(() => {
-    return [...tasks].sort((a, b) => a.order - b.order);
-  }, [tasks]);
+    return [...tasks].filter(task => task.section === id)
+      .sort((a, b) => a.order - b.order);
+  }, [tasks, id]);
 
   const handleDragEnd = useCallback((event) => {
     const { active, over } = event;
@@ -62,45 +61,6 @@ const TaskSection = ({
     }
   }, [sortedTasks, id, onReorderTasks]);
 
-  const renderTasks = () => {
-    if (shouldEnableDragAndDrop) {
-      return (
-        <DndContext 
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext 
-            items={sortedTasks.map(task => task.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {sortedTasks.map((task) => (
-              <SortableTask
-                key={task.id}
-                {...task}
-                onToggleCompletion={onToggleCompletion}
-                onDeleteTask={onDeleteTask}
-                onSelectTask={onSelectTask}
-                selected={task.id === selectedTaskId}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-      );
-    }
-
-    return sortedTasks.map((task) => (
-      <Task
-        key={task.id}
-        {...task}
-        onToggleCompletion={onToggleCompletion}
-        onDeleteTask={onDeleteTask}
-        onSelectTask={onSelectTask}
-        selected={task.id === selectedTaskId}
-      />
-    ));
-  };
-
   return (
     <div className="task-section" data-section-id={id}>
       <div className="section-header" onClick={() => setIsExpanded(!isExpanded)}>
@@ -109,7 +69,27 @@ const TaskSection = ({
       </div>
       {isExpanded && (
         <div className="section-content">
-          {renderTasks()}
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext 
+              items={sortedTasks.map(task => task.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {sortedTasks.map((task) => (
+                <SortableTask
+                  key={task.id}
+                  {...task}
+                  onToggleCompletion={onToggleCompletion}
+                  onDeleteTask={onDeleteTask}
+                  onSelectTask={onSelectTask}
+                  selected={task.id === selectedTaskId}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
       )}
     </div>
