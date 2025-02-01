@@ -1,21 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { 
-  DndContext, 
-  closestCenter,
-  KeyboardSensor, 
-  PointerSensor, 
-  useSensor, 
-  useSensors,
-} from '@dnd-kit/core';
+import {
+  useSortable
+} from '@dnd-kit/sortable';
 import { 
   SortableContext, 
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { arrayMove } from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
 import SortableTask from './SortableTask';
-import Task from './Task';
 
 const TaskSection = ({ 
   id, 
@@ -29,17 +22,10 @@ const TaskSection = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 1,
-        tolerance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  // Make the section droppable
+  const { setNodeRef } = useDroppable({
+    id: `section-${id}`,
+  });
 
   // Memoize sorted tasks to prevent unnecessary re-renders
   const sortedTasks = useMemo(() => {
@@ -47,54 +33,36 @@ const TaskSection = ({
       .sort((a, b) => a.order - b.order);
   }, [tasks, id]);
 
-  const handleDragEnd = useCallback((event) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = sortedTasks.findIndex(task => task.id === parseInt(active.id));
-      const newIndex = sortedTasks.findIndex(task => task.id === parseInt(over.id));
-
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newTasks = arrayMove(sortedTasks, oldIndex, newIndex);
-        onReorderTasks(id, newTasks);
-      }
-    }
-  }, [sortedTasks, id, onReorderTasks]);
+  console.log(`[TaskSection ${id}] Rendering with ${sortedTasks.length} tasks`);
+  sortedTasks.forEach(t => console.log(`[TaskSection ${id}] Task ${t.id}: order=${t.order}`));
 
   return (
-    <div className="task-section" data-section-id={id}>
+    <div className="task-section" data-section-id={id} ref={setNodeRef}>
       <div className="section-header" onClick={() => setIsExpanded(!isExpanded)}>
         <ChevronRight className={`section-caret ${isExpanded ? 'rotate-90' : ''}`} size={16} />
         <span>{title}</span>
       </div>
       {isExpanded && (
         <div className="section-content">
-          <DndContext 
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+          <SortableContext 
+            items={sortedTasks.map(task => task.id)}
+            strategy={verticalListSortingStrategy}
           >
-            <SortableContext 
-              items={sortedTasks.map(task => task.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {sortedTasks.map((task) => (
-                <SortableTask
-                  key={task.id}
-                  {...task}
-                  onToggleCompletion={onToggleCompletion}
-                  onDeleteTask={onDeleteTask}
-                  onSelectTask={onSelectTask}
-                  selected={task.id === selectedTaskId}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+            {sortedTasks.map((task) => (
+              <SortableTask
+                key={task.id}
+                {...task}
+                onToggleCompletion={onToggleCompletion}
+                onDeleteTask={onDeleteTask}
+                onSelectTask={onSelectTask}
+                selected={task.id === selectedTaskId}
+              />
+            ))}
+          </SortableContext>
         </div>
       )}
     </div>
   );
 };
 
-// Prevent unnecessary re-renders
 export default React.memo(TaskSection);

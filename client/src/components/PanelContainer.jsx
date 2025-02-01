@@ -29,14 +29,7 @@ const PanelContainer = ({
         tolerance: 5,
       },
     }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: ({context}) => {
-        return {
-          x: context.active.rect.current.offsetLeft,
-          y: context.active.rect.current.offsetTop,
-        }
-      },
-    })
+    useSensor(KeyboardSensor)
   );
 
   const handleDragEnd = (event) => {
@@ -45,37 +38,34 @@ const PanelContainer = ({
     if (!over) return;
 
     const activeId = parseInt(active.id);
-    const overId = parseInt(over.id);
-
-    if (activeId === overId) return;
-
     const activeTask = tasks.find(t => t.id === activeId);
-    const overTask = tasks.find(t => t.id === overId);
 
-    if (!activeTask || !overTask) return;
+    if (!activeTask) return;
 
-    // Get the target section's tasks
+    // Extract section ID from the over.id (format: section-{sectionId})
+    const targetSection = over.id.replace('section-', '');
+
+    // Get tasks in target section
     const targetSectionTasks = tasks
-      .filter(task => task.section === overTask.section)
+      .filter(task => task.section === targetSection)
       .sort((a, b) => a.order - b.order);
 
-    // Find the position where we want to insert the task
-    const newIndex = targetSectionTasks.findIndex(t => t.id === overId);
-
-    // Create a new array with the task in the new position
-    const reorderedTasks = [...targetSectionTasks];
-
-    // If we're moving to a new section, insert the task
-    // If we're in the same section, just reorder
-    if (activeTask.section !== overTask.section) {
-      reorderedTasks.splice(newIndex, 0, { ...activeTask, section: overTask.section });
+    let newOrder;
+    if (targetSectionTasks.length === 0) {
+      newOrder = 10000;
     } else {
-      const oldIndex = reorderedTasks.findIndex(t => t.id === activeId);
-      reorderedTasks.splice(oldIndex, 1);
-      reorderedTasks.splice(newIndex, 0, activeTask);
+      // Place at the end of the target section
+      newOrder = targetSectionTasks[targetSectionTasks.length - 1].order + 10000;
     }
 
-    onReorderTasks(overTask.section, reorderedTasks);
+    // Create updated task list
+    const updatedTasks = [...targetSectionTasks];
+    if (activeTask.section !== targetSection) {
+      updatedTasks.push({ ...activeTask, section: targetSection, order: newOrder });
+    }
+
+    console.log(`[PanelContainer] Moving task ${activeId} to section ${targetSection} with order ${newOrder}`);
+    onReorderTasks(targetSection, updatedTasks);
   };
 
   return (
