@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { 
   DndContext, 
@@ -43,35 +43,24 @@ const TaskSection = ({
 
   const shouldEnableDragAndDrop = id === 'Triage';
 
-  const handleDragStart = useCallback((event) => {
-    const { active } = event;
-    console.log(`[DragStart] Task ${active.id} drag started`);
-  }, []);
-
-  const handleDragMove = useCallback((event) => {
-    const { active, over } = event;
-    if (over) {
-      console.log(`[DragMove] Task ${active.id} over ${over.id}`);
-    }
-  }, []);
+  // Memoize sorted tasks to prevent unnecessary re-renders
+  const sortedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => a.order - b.order);
+  }, [tasks]);
 
   const handleDragEnd = useCallback((event) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = tasks.findIndex(task => task.id === parseInt(active.id));
-      const newIndex = tasks.findIndex(task => task.id === parseInt(over.id));
+      const oldIndex = sortedTasks.findIndex(task => task.id === parseInt(active.id));
+      const newIndex = sortedTasks.findIndex(task => task.id === parseInt(over.id));
 
       if (oldIndex !== -1 && newIndex !== -1) {
-        const newTasks = arrayMove(tasks, oldIndex, newIndex);
+        const newTasks = arrayMove(sortedTasks, oldIndex, newIndex);
         onReorderTasks(id, newTasks);
       }
     }
-  }, [tasks, id, onReorderTasks]);
-
-  const sortedTasks = React.useMemo(() => {
-    return [...tasks].sort((a, b) => a.order - b.order);
-  }, [tasks]);
+  }, [sortedTasks, id, onReorderTasks]);
 
   const renderTasks = () => {
     if (shouldEnableDragAndDrop) {
@@ -79,8 +68,6 @@ const TaskSection = ({
         <DndContext 
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
         >
           <SortableContext 
@@ -129,4 +116,5 @@ const TaskSection = ({
   );
 };
 
+// Prevent unnecessary re-renders
 export default React.memo(TaskSection);

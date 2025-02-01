@@ -1,11 +1,5 @@
-/**
- * Home.jsx
- * Main container component for the task management application.
- * Manages global state and coordinates interactions between components.
- */
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { startOfDay, endOfDay, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 import Banner from '../components/Banner';
 import PanelContainer from '../components/PanelContainer';
 import config from '../config.json';
@@ -16,12 +10,12 @@ const Home = () => {
   );
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
-
   const queryClient = useQueryClient();
 
+  // Increase stale time to prevent unnecessary refetches
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
-    staleTime: 1000,
+    staleTime: 5000, // Increase stale time to 5 seconds
   });
 
   const updateTaskMutation = useMutation({
@@ -40,11 +34,19 @@ const Home = () => {
       return res.json();
     },
     onMutate: async ({ id, ...data }) => {
+      console.log(`[updateTaskMutation.onMutate] Starting optimistic update for task ${id}:`, data);
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['/api/tasks'] });
+
+      // Snapshot the previous value
       const previousTasks = queryClient.getQueryData(['/api/tasks']);
-      queryClient.setQueryData(['/api/tasks'], old => 
-        old.map(task => task.id === id ? { ...task, ...data } : task)
-      );
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['/api/tasks'], old => old.map(task => 
+        task.id === id ? { ...task, ...data } : task
+      ));
+
+      // Return a context object with the snapshotted value
       return { previousTasks };
     },
     onError: (err, variables, context) => {
@@ -54,35 +56,10 @@ const Home = () => {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    },
-  });
-
-  const createTaskMutation = useMutation({
-    mutationFn: async (taskData) => {
-      const res = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData),
-      });
-      if (!res.ok) throw new Error('Failed to create task');
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    },
-  });
-
-  const deleteTaskMutation = useMutation({
-    mutationFn: async (id) => {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) throw new Error('Failed to delete task');
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      // Only invalidate after the mutation has settled
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      }, 1000);
     },
   });
 
@@ -90,26 +67,40 @@ const Home = () => {
     console.log(`[handleReorderTasks] Starting reorder in section ${sectionId}`);
 
     try {
+      // Calculate new orders with larger gaps to prevent decimal issues
       const updates = reorderedTasks.map((task, index) => ({
         id: task.id,
         order: (index + 1) * 10000
       }));
 
-      await Promise.all(
-        updates.map(update => 
-          updateTaskMutation.mutateAsync({
-            id: update.id,
-            order: update.order
-          })
-        )
-      );
+      // Optimistically update the UI
+      queryClient.setQueryData(['/api/tasks'], old => {
+        const updated = [...old];
+        updates.forEach(update => {
+          const index = updated.findIndex(t => t.id === update.id);
+          if (index !== -1) {
+            updated[index] = { ...updated[index], order: update.order };
+          }
+        });
+        return updated.sort((a, b) => a.order - b.order);
+      });
+
+      // Update tasks sequentially to maintain order
+      for (const update of updates) {
+        await updateTaskMutation.mutateAsync({
+          id: update.id,
+          order: update.order
+        });
+      }
 
     } catch (error) {
       console.error('[handleReorderTasks] Error:', error);
+      // Force refresh from server on error
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     }
   };
 
+  // Other handlers remain unchanged
   const togglePanel = (panelId) => {
     setVisiblePanels(prev => ({
       ...prev,
@@ -119,16 +110,13 @@ const Home = () => {
 
   const handleAddTask = (taskTitle) => {
     if (!taskTitle.trim()) return;
-
     const maxOrder = tasks.length ? Math.max(...tasks.map(t => t.order)) : 0;
-    const newTask = {
+    createTaskMutation.mutate({
       title: taskTitle,
       section: 'Triage',
       completed: false,
       order: maxOrder + 10000
-    };
-
-    createTaskMutation.mutate(newTask);
+    });
   };
 
   const toggleTaskCompletion = (taskId, currentCompleted) => {
@@ -152,6 +140,7 @@ const Home = () => {
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
   };
+
 
   return (
     <div className="app-container">
