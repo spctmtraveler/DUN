@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { 
   DndContext, 
@@ -7,7 +7,6 @@ import {
   PointerSensor, 
   useSensor, 
   useSensors,
-  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
 import { 
   SortableContext, 
@@ -30,16 +29,10 @@ const TaskSection = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  console.log(`[TaskSection ${id}] Rendering with ${tasks.length} tasks`);
-  tasks.forEach(task => {
-    console.log(`[TaskSection ${id}] Task ${task.id}: order=${task.order}`);
-  });
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Reduce activation constraints to make dragging easier
       activationConstraint: {
-        distance: 1, // Reduce required movement distance
+        distance: 1,
         tolerance: 5,
       },
     }),
@@ -50,52 +43,38 @@ const TaskSection = ({
 
   const shouldEnableDragAndDrop = id === 'Triage';
 
-  const handleDragStart = (event) => {
+  const handleDragStart = useCallback((event) => {
     const { active } = event;
     console.log(`[DragStart] Task ${active.id} drag started`);
-  };
+  }, []);
 
-  const handleDragMove = (event) => {
+  const handleDragMove = useCallback((event) => {
     const { active, over } = event;
-    console.log(`[DragMove] Task ${active.id} over ${over?.id || 'nothing'}`);
-  };
+    if (over) {
+      console.log(`[DragMove] Task ${active.id} over ${over.id}`);
+    }
+  }, []);
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = useCallback((event) => {
     const { active, over } = event;
-    console.log(`[DragEnd] Task ${active.id} dropped over ${over?.id || 'nothing'}`);
 
     if (over && active.id !== over.id) {
-      const oldIndex = tasks.findIndex(task => task.id === active.id);
-      const newIndex = tasks.findIndex(task => task.id === over.id);
-
-      console.log(`[DragEnd] Moving task from index ${oldIndex} to ${newIndex}`);
-      console.log(`[DragEnd] Current task orders:`, tasks.map(t => ({ id: t.id, order: t.order })));
+      const oldIndex = tasks.findIndex(task => task.id === parseInt(active.id));
+      const newIndex = tasks.findIndex(task => task.id === parseInt(over.id));
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newTasks = arrayMove(tasks, oldIndex, newIndex);
-        console.log(`[DragEnd] New task orders:`, newTasks.map(t => ({ id: t.id, order: t.order })));
         onReorderTasks(id, newTasks);
-      } else {
-        console.warn(`[DragEnd] Invalid indices - oldIndex: ${oldIndex}, newIndex: ${newIndex}`);
       }
-    } else {
-      console.log(`[DragEnd] No movement needed - same position`);
     }
-  };
+  }, [tasks, id, onReorderTasks]);
 
-  const dropAnimation = {
-    sideEffects: defaultDropAnimationSideEffects({
-      styles: {
-        active: {
-          opacity: "0.4"
-        }
-      }
-    })
-  };
+  const sortedTasks = React.useMemo(() => {
+    return [...tasks].sort((a, b) => a.order - b.order);
+  }, [tasks]);
 
   const renderTasks = () => {
     if (shouldEnableDragAndDrop) {
-      console.log(`[TaskSection ${id}] Rendering with DnD enabled`);
       return (
         <DndContext 
           sensors={sensors}
@@ -105,10 +84,10 @@ const TaskSection = ({
           onDragEnd={handleDragEnd}
         >
           <SortableContext 
-            items={tasks.map(task => task.id)}
+            items={sortedTasks.map(task => task.id)}
             strategy={verticalListSortingStrategy}
           >
-            {tasks.map((task) => (
+            {sortedTasks.map((task) => (
               <SortableTask
                 key={task.id}
                 {...task}
@@ -123,7 +102,7 @@ const TaskSection = ({
       );
     }
 
-    return tasks.map((task) => (
+    return sortedTasks.map((task) => (
       <Task
         key={task.id}
         {...task}
@@ -150,4 +129,4 @@ const TaskSection = ({
   );
 };
 
-export default TaskSection;
+export default React.memo(TaskSection);
