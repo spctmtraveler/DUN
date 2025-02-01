@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { 
+  DndContext, 
+  closestCenter,
+  KeyboardSensor, 
+  PointerSensor, 
+  useSensor, 
+  useSensors,
+  defaultDropAnimationSideEffects
+} from '@dnd-kit/core';
+import { 
+  SortableContext, 
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy 
+} from '@dnd-kit/sortable';
 import { arrayMove } from '@dnd-kit/sortable';
 import SortableTask from './SortableTask';
 import Task from './Task';
@@ -27,6 +39,7 @@ const TaskSection = ({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -50,7 +63,7 @@ const TaskSection = ({
     const { active, over } = event;
     console.log(`[DragEnd] Task ${active.id} dropped over ${over?.id || 'nothing'}`);
 
-    if (active.id !== over?.id) {
+    if (over && active.id !== over.id) {
       const oldIndex = tasks.findIndex(task => task.id === active.id);
       const newIndex = tasks.findIndex(task => task.id === over.id);
 
@@ -58,15 +71,25 @@ const TaskSection = ({
       console.log(`[DragEnd] Current task orders:`, tasks.map(t => ({ id: t.id, order: t.order })));
 
       if (oldIndex !== -1 && newIndex !== -1) {
-        const newOrder = arrayMove(tasks, oldIndex, newIndex);
-        console.log(`[DragEnd] New task orders:`, newOrder.map(t => ({ id: t.id, order: t.order })));
-        onReorderTasks(id, newOrder);
+        const newTasks = arrayMove(tasks, oldIndex, newIndex);
+        console.log(`[DragEnd] New task orders:`, newTasks.map(t => ({ id: t.id, order: t.order })));
+        onReorderTasks(id, newTasks);
       } else {
         console.warn(`[DragEnd] Invalid indices - oldIndex: ${oldIndex}, newIndex: ${newIndex}`);
       }
     } else {
       console.log(`[DragEnd] No movement needed - same position`);
     }
+  };
+
+  const dropAnimation = {
+    sideEffects: defaultDropAnimationSideEffects({
+      styles: {
+        active: {
+          opacity: "0.4"
+        }
+      }
+    })
   };
 
   const renderTasks = () => {
@@ -81,7 +104,7 @@ const TaskSection = ({
           onDragEnd={handleDragEnd}
         >
           <SortableContext 
-            items={tasks.map(task => task.id)} 
+            items={tasks.map(task => task.id)}
             strategy={verticalListSortingStrategy}
           >
             {tasks.map((task) => (

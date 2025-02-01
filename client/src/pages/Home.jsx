@@ -3,7 +3,6 @@
  * Main container component for the task management application.
  * Manages global state and coordinates interactions between components.
  */
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { startOfDay, endOfDay, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
@@ -43,8 +42,8 @@ const Home = () => {
       console.log(`[updateTaskMutation] Successfully updated task ${id}:`, result);
       return result;
     },
-    onMutate: async ({ id, order }) => {
-      console.log(`[updateTaskMutation.onMutate] Starting optimistic update for task ${id} with order ${order}`);
+    onMutate: async ({ id, ...data }) => {
+      console.log(`[updateTaskMutation.onMutate] Starting optimistic update for task ${id}:`, data);
       await queryClient.cancelQueries({ queryKey: ['/api/tasks'] });
 
       const previousTasks = queryClient.getQueryData(['/api/tasks']);
@@ -52,7 +51,7 @@ const Home = () => {
 
       queryClient.setQueryData(['/api/tasks'], old => {
         const updated = old.map(task => 
-          task.id === id ? { ...task, order } : task
+          task.id === id ? { ...task, ...data } : task
         );
         console.log('[updateTaskMutation.onMutate] Updated tasks:', updated);
         return updated;
@@ -190,7 +189,7 @@ const Home = () => {
       title: taskTitle,
       section: 'Triage',
       completed: false,
-      order: maxOrder + 1000
+      order: maxOrder + 10000
     };
 
     createTaskMutation.mutate(newTask);
