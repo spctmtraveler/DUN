@@ -21,7 +21,8 @@ const Task = ({
   onToggleCompletion,
   onDeleteTask,
   onSelectTask,
-  dragHandleProps 
+  dragHandleProps,
+  ...props
 }) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -42,7 +43,8 @@ const Task = ({
   });
 
   const handleClick = (e) => {
-    if (!e.target.closest('.task-controls, .task-checkbox')) {
+    // Don't trigger selection when clicking controls
+    if (!e.target.closest('.task-controls, .task-checkbox, .task-grip')) {
       onSelectTask(id);
     }
   };
@@ -59,6 +61,7 @@ const Task = ({
     <div 
       className={`task ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
       onClick={handleClick}
+      {...props}
     >
       <div className="task-content">
         <div className="task-grip" {...dragHandleProps}>
@@ -69,10 +72,9 @@ const Task = ({
           className="task-checkbox" 
           checked={completed}
           onChange={() => onToggleCompletion(id, completed)}
-          data-no-dnd
         />
         <span className="task-title">{title}</span>
-        <div className="task-controls" data-no-dnd>
+        <div className="task-controls">
           <span className="task-date-label">
             {formatDate(revisitDate) || 'Set date'}
           </span>
@@ -120,4 +122,4 @@ const Task = ({
   );
 };
 
-export default Task;
+export default React.memo(Task);
