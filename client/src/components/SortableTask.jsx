@@ -3,7 +3,15 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Task from './Task';
 
-const SortableTask = ({ id, sectionId, ...props }) => {
+const SortableTask = ({ 
+  id, 
+  sectionId,
+  // Separate drag-drop related props from task data props
+  createdAt,
+  updatedAt,
+  order,
+  ...taskProps 
+}) => {
   const {
     attributes,
     listeners,
@@ -35,18 +43,18 @@ const SortableTask = ({ id, sectionId, ...props }) => {
   return (
     <div 
       ref={setNodeRef} 
-      style={style} 
-      data-task-id={id} 
+      style={style}
+      data-task-id={id}
       data-section-id={sectionId}
     >
       <Task 
-        id={id} 
+        id={id}
         {...attributes}
         dragHandleProps={{
           ...listeners,
           'data-no-dnd': 'true'
         }}
-        {...props}
+        {...taskProps}
       />
     </div>
   );

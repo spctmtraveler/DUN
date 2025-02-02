@@ -1,9 +1,3 @@
-/**
- * Task.jsx
- * Renders an individual task item with its controls and interactions.
- * Includes completion checkbox, title, date picker, and delete button.
- */
-
 import React, { useState } from 'react';
 import { Grip, Calendar, X } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, addDays } from 'date-fns';
@@ -22,7 +16,11 @@ const Task = ({
   onDeleteTask,
   onSelectTask,
   dragHandleProps,
-  ...props
+  // Destructure but don't use these props to prevent them from being passed to DOM
+  createdAt,
+  updatedAt,
+  order,
+  ...otherProps // Any other valid DOM props
 }) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -61,7 +59,7 @@ const Task = ({
     <div 
       className={`task ${selected ? 'selected' : ''} ${completed ? 'completed' : ''}`}
       onClick={handleClick}
-      {...props}
+      {...otherProps}
     >
       <div className="task-content">
         <div className="task-grip" {...dragHandleProps}>
