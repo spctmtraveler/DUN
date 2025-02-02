@@ -58,44 +58,47 @@ const PanelContainer = ({
       return;
     }
 
-    // Get tasks in target section and sort by order
+    // Get ALL tasks in target section and sort by order
     const sectionTasks = tasks
       .filter(task => task.section === targetSection)
       .sort((a, b) => a.order - b.order);
 
+    // Create a full copy of section tasks excluding the active task
+    const updatedTasks = sectionTasks.filter(t => t.id !== activeId);
+
     let newOrder;
-
     if (overTask) {
-      // Dropping on another task - calculate order between tasks
-      const overTaskIndex = sectionTasks.findIndex(t => t.id === overId);
+      const overIndex = updatedTasks.findIndex(t => t.id === overId);
 
-      if (overTaskIndex === 0) {
-        // Dropped on first task - place before it
-        newOrder = sectionTasks[0].order / 2;
-      } else if (overTaskIndex === sectionTasks.length - 1) {
-        // Dropped on last task - place after it
-        newOrder = sectionTasks[overTaskIndex].order + 10000;
+      if (overIndex === -1) {
+        // Over task not found - append to end
+        newOrder = (updatedTasks.length === 0) 
+          ? 10000 
+          : updatedTasks[updatedTasks.length - 1].order + 10000;
+      } else if (overIndex === 0) {
+        // Dropped at start - place before first
+        newOrder = updatedTasks[0].order / 2;
       } else {
-        // Dropped between tasks - calculate middle point
-        const prevTask = sectionTasks[overTaskIndex - 1];
-        const nextTask = sectionTasks[overTaskIndex];
-        newOrder = (prevTask.order + nextTask.order) / 2;
+        // Calculate midpoint between tasks
+        const prevOrder = updatedTasks[overIndex - 1].order;
+        const nextOrder = updatedTasks[overIndex].order;
+        newOrder = (prevOrder + nextOrder) / 2;
       }
     } else {
       // Dropping into empty section or at the end
-      newOrder = sectionTasks.length === 0 ? 10000 : 
-        sectionTasks[sectionTasks.length - 1].order + 10000;
+      newOrder = updatedTasks.length === 0 
+        ? 10000 
+        : updatedTasks[updatedTasks.length - 1].order + 10000;
     }
 
-    // Create updated task list maintaining relative order
-    const updatedTasks = sectionTasks.filter(t => t.id !== activeId);
+    // Insert task at correct position
     const updatedTask = {
       ...activeTask,
       section: targetSection,
       order: newOrder
     };
 
-    // Insert the task at the appropriate position
+    // Find insert position based on order
     const insertIndex = updatedTasks.findIndex(t => t.order > newOrder);
     if (insertIndex === -1) {
       updatedTasks.push(updatedTask);
@@ -103,8 +106,14 @@ const PanelContainer = ({
       updatedTasks.splice(insertIndex, 0, updatedTask);
     }
 
+    // Recalculate all orders to ensure even spacing
+    const finalTasks = updatedTasks.map((task, index) => ({
+      ...task,
+      order: (index + 1) * 10000
+    }));
+
     console.log(`[DragEnd] Moving task ${activeId} to section ${targetSection} with order ${newOrder}`);
-    onReorderTasks(targetSection, updatedTasks);
+    onReorderTasks(targetSection, finalTasks);
   };
 
   return (
