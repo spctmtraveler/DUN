@@ -1,3 +1,4 @@
+
 import { drizzle } from "drizzle-orm/neon-serverless";
 import ws from "ws";
 import * as schema from "@db/schema";
@@ -9,7 +10,8 @@ if (!process.env.DATABASE_URL) {
 }
 
 const connectionString = process.env.DATABASE_URL;
-const pooledConnectionString = connectionString.replace('.us-east-2', '-pooler.us-east-2');
+// Use the pooled connection for better reliability
+const pooledConnectionString = connectionString.replace('postgres.', 'postgres-pooler.');
 
 export const db = drizzle({
   connectionString: pooledConnectionString,
