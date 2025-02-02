@@ -34,49 +34,53 @@ const PanelContainer = ({
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    console.log('[DragEnd]', { active, over });
 
-    if (!active || !over) return;
+    if (!active || !over) {
+      console.log('[DragEnd] No valid drop target');
+      return;
+    }
 
     const activeId = parseInt(active.id);
     const activeTask = tasks.find(t => t.id === activeId);
 
-    if (!activeTask) return;
-
-    // Extract section ID from over.id (format: "section-{sectionId}")
-    const overId = String(over.id);
-    const match = overId.match(/^section-(.+)$/);
-    const targetSection = match ? match[1] : null;
-
-    if (!targetSection) {
-      console.log('[DragEnd] Invalid target section:', overId);
+    if (!activeTask) {
+      console.log('[DragEnd] Task not found:', activeId);
       return;
     }
 
-    console.log(`[DragEnd] Moving task from index ${activeTask.section} to ${targetSection}`);
+    // Get target section ID directly from the data property
+    const targetSection = over.data.current?.sectionId;
 
-    // Get tasks in target section
+    if (!targetSection || !['Triage', 'A', 'B', 'C'].includes(targetSection)) {
+      console.log('[DragEnd] Invalid target section:', targetSection);
+      return;
+    }
+
+    // Get tasks in target section and sort by order
     const targetSectionTasks = tasks
       .filter(task => task.section === targetSection)
       .sort((a, b) => a.order - b.order);
 
+    // Calculate new order
     let newOrder;
     if (targetSectionTasks.length === 0) {
       newOrder = 10000;
     } else {
-      // Place at the end of the target section
-      newOrder = targetSectionTasks[targetSectionTasks.length - 1].order + 10000;
+      const lastTask = targetSectionTasks[targetSectionTasks.length - 1];
+      newOrder = lastTask.order + 10000;
     }
 
     // Create updated task list
-    const updatedTasks = [...targetSectionTasks];
+    const updatedTasks = tasks.filter(t => t.section === targetSection);
     if (activeTask.section !== targetSection) {
-      updatedTasks.push({ ...activeTask, section: targetSection, order: newOrder });
+      updatedTasks.push({
+        ...activeTask,
+        section: targetSection,
+        order: newOrder
+      });
     }
 
-    console.log(`[DragEnd] Current task orders:`, targetSectionTasks.map(t => t.order));
-    console.log(`[DragEnd] New task orders:`, updatedTasks.map(t => t.order));
-
+    console.log(`[DragEnd] Moving task ${activeId} to section ${targetSection} with order ${newOrder}`);
     onReorderTasks(targetSection, updatedTasks);
   };
 

@@ -3,9 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Task from './Task';
 
-const SortableTask = ({ id, ...props }) => {
-  console.log(`[SortableTask ${id}] Rendering`);
-
+const SortableTask = ({ id, sectionId, ...props }) => {
   const {
     attributes,
     listeners,
@@ -15,6 +13,11 @@ const SortableTask = ({ id, ...props }) => {
     isDragging,
   } = useSortable({ 
     id,
+    data: {
+      type: 'TASK',
+      taskId: id,
+      sectionId
+    },
     transition: {
       duration: 150,
       easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
@@ -30,7 +33,7 @@ const SortableTask = ({ id, ...props }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} data-task-id={id} data-section-id={sectionId}>
       <Task 
         id={id} 
         {...props}

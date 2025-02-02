@@ -25,6 +25,10 @@ const TaskSection = ({
   // Make the section droppable with visual feedback
   const { setNodeRef, isOver } = useDroppable({
     id: `section-${id}`,
+    data: {
+      type: 'SECTION',
+      sectionId: id
+    }
   });
 
   // Memoize sorted tasks to prevent unnecessary re-renders
@@ -32,9 +36,6 @@ const TaskSection = ({
     return [...tasks].filter(task => task.section === id)
       .sort((a, b) => a.order - b.order);
   }, [tasks, id]);
-
-  console.log(`[TaskSection ${id}] Rendering with ${sortedTasks.length} tasks`);
-  sortedTasks.forEach(t => console.log(`[TaskSection ${id}] Task ${t.id}: order=${t.order}`));
 
   return (
     <div 
@@ -56,6 +57,7 @@ const TaskSection = ({
               <SortableTask
                 key={task.id}
                 {...task}
+                sectionId={id}
                 onToggleCompletion={onToggleCompletion}
                 onDeleteTask={onDeleteTask}
                 onSelectTask={onSelectTask}
