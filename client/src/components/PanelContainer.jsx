@@ -43,17 +43,16 @@ const PanelContainer = ({
 
     if (!activeTask) return;
 
-    // Extract section ID from over.id (format: "section-{sectionId}")
-    const overId = String(over.id);
-    const match = overId.match(/^section-(.+)$/);
+    const validSections = ['Triage', 'A', 'B', 'C'];
+    const match = String(over.id).match(/^section-(.+)$/);
     const targetSection = match ? match[1] : null;
 
-    if (!targetSection) {
-      console.log('[DragEnd] Invalid target section:', overId);
+    if (!targetSection || !validSections.includes(targetSection)) {
+      console.log('[DragEnd] Invalid target section:', over.id);
       return;
     }
 
-    console.log(`[DragEnd] Moving task from index ${activeTask.section} to ${targetSection}`);
+    console.log(`[DragEnd] Moving task from ${activeTask.section} to ${targetSection}`);
 
     // Get tasks in target section
     const targetSectionTasks = tasks
