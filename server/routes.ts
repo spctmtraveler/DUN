@@ -44,7 +44,6 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Task not found" });
       }
 
-      // Build update object conditionally
       const updateData: Partial<InsertTask> = {
         title: req.body.title ?? existingTask.title,
         section: req.body.section ?? existingTask.section,
@@ -71,7 +70,6 @@ export function registerRoutes(app: Express): Server {
       if (!updatedTask) {
         return res.status(404).json({ message: "Task not found" });
       }
-
       res.json(updatedTask);
     } catch (error) {
       console.error("Error updating task:", error);
