@@ -33,15 +33,20 @@ const SortableTask = ({ id, sectionId, ...props }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} data-task-id={id} data-section-id={sectionId}>
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      data-task-id={id} 
+      data-section-id={sectionId}
+    >
       <Task 
         id={id} 
-        {...props}
         {...attributes}
         dragHandleProps={{
           ...listeners,
           'data-no-dnd': 'true'
         }}
+        {...props}
       />
     </div>
   );
