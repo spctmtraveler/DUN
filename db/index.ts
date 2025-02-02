@@ -8,8 +8,11 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
+const connectionString = process.env.DATABASE_URL;
+const pooledConnectionString = connectionString.replace('.us-east-2', '-pooler.us-east-2');
+
 export const db = drizzle({
-  connection: process.env.DATABASE_URL,
+  connectionString: pooledConnectionString,
   schema,
   ws: ws,
 });
