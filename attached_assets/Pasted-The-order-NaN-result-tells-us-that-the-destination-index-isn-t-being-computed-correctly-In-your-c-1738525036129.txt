@@ -1,0 +1,156 @@
+The “order NaN” result tells us that the destination index isn’t being computed correctly. In your case, when you drop a task within the same list, the code that computes the new index is returning NaN. (When multiplied by 10000, NaN stays NaN and then the task gets placed at the bottom.) We need to make sure that:
+
+Your drag‑end handler reliably gets a valid destination index.
+Your code rebuilds the full sorted list for that section before recalculating order values.
+Below is a combined answer with sample code changes for your onDragEnd handler (likely in PanelContainer.jsx) and your handleReorderTasks function in Home.jsx.
+
+Step 1: Fix the onDragEnd Handler
+Goal:
+When dragging within a list, extract a valid destination index (even if the drag library does not supply one) so that the new order is computed properly.
+
+Changes (in your drag‑end handler file, e.g. PanelContainer.jsx):
+
+Itemized Changes:
+
+Before (conceptual):
+
+js
+Copy
+const onDragEnd = ({ active, over }) => {
+  if (!over) return;
+  const targetSectionId = getSectionId(over.node); // may be working for inter-section
+  const destinationIndex = over.data.current.index; // sometimes undefined or NaN
+  moveTask(getTaskById(active.id), targetSectionId, destinationIndex);
+};
+After:
+
+js
+Copy
+const onDragEnd = ({ active, over }) => {
+  if (!over) return;
+
+  // Helper to traverse DOM for the container's section id:
+  const getSectionId = (element) => {
+    if (element.dataset && element.dataset.sectionId) return element.dataset.sectionId;
+    if (element.parentElement) return getSectionId(element.parentElement);
+    return null;
+  };
+
+  const targetSectionId = getSectionId(over.node);
+  if (!targetSectionId) {
+    console.error("[DragEnd] No valid section ID found on drop target.");
+    return;
+  }
+
+  // Try to read the destination index from the drag event
+  let destinationIndex = (over.data && over.data.current && over.data.current.index);
+  // If not defined or NaN, fall back to computing it:
+  if (destinationIndex === undefined || isNaN(destinationIndex)) {
+    // Get all tasks in the target section and sort them
+    const sectionTasks = tasks
+      .filter(task => task.section === targetSectionId)
+      .sort((a, b) => a.order - b.order);
+
+    // Fallback: if the dragged task is already in the list,
+    // use its current index; otherwise, drop it at the end.
+    destinationIndex = sectionTasks.findIndex(task => task.id === active.id);
+    if (destinationIndex === -1) {
+      destinationIndex = sectionTasks.length;
+    }
+  }
+
+  // Now rebuild the new list for that section:
+  const sectionTasks = tasks
+    .filter(task => task.section === targetSectionId)
+    .sort((a, b) => a.order - b.order);
+
+  // Remove the dragged task from this list:
+  const filteredSectionTasks = sectionTasks.filter(task => task.id !== active.id);
+  // Insert the dragged task at the computed index:
+  filteredSectionTasks.splice(destinationIndex, 0, tasks.find(task => task.id === active.id));
+
+  console.log(`[DragEnd] Moving task ${active.id} to section ${targetSectionId} at index ${destinationIndex}`);
+
+  // Call the reordering handler with the full updated list:
+  onReorderTasks(targetSectionId, filteredSectionTasks);
+};
+Explanation:
+This code ensures that if over.data.current.index is missing or NaN, we fall back on calculating the current sorted order of tasks in that section. Then we remove the dragged task and reinsert it at the proper index. That updated full list is then sent to onReorderTasks.
+
+Step 2: Verify handleReorderTasks in Home.jsx
+Goal:
+Recalculate order values for the full list.
+
+Your current function looks acceptable, but add extra logging and verify that reorderedTasks is the full sorted list.
+
+Itemized Code (in Home.jsx):
+
+js
+Copy
+const handleReorderTasks = async (sectionId, reorderedTasks) => {
+  console.log(`[handleReorderTasks] Starting reorder in section ${sectionId}`);
+  console.log("Reordered tasks array:", reorderedTasks);
+
+  try {
+    // Calculate new orders with large gaps
+    const updates = reorderedTasks.map((task, index) => {
+      const newOrder = (index + 1) * 10000;
+      console.log(`Task ${task.id} at index ${index} gets order ${newOrder}`);
+      return {
+        id: task.id,
+        section: sectionId,
+        order: newOrder
+      };
+    });
+
+    // Optimistically update the UI:
+    queryClient.setQueryData(['/api/tasks'], old => {
+      const updated = [...old];
+      updates.forEach(update => {
+        const idx = updated.findIndex(t => t.id === update.id);
+        if (idx !== -1) {
+          updated[idx] = { ...updated[idx], order: update.order, section: update.section };
+        }
+      });
+      return updated;
+    });
+
+    // Update tasks sequentially:
+    for (const update of updates) {
+      await updateTaskMutation.mutateAsync({
+        id: update.id,
+        section: update.section,
+        order: update.order
+      });
+    }
+  } catch (error) {
+    console.error('[handleReorderTasks] Error:', error);
+    queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+  }
+};
+Explanation:
+This code logs each computed order. If any computed order is NaN, the log will show it. The use of (index + 1) * 10000 guarantees unique order values as long as the index is valid.
+
+Step 3: Verify Your Server Endpoint
+Your PATCH endpoint in server/routes.ts is correct as long as it updates the order from req.body.order:
+
+ts
+Copy
+updateData.order = req.body.hasOwnProperty("order")
+          ? req.body.order
+          : existingTask.order;
+Explanation:
+If the client sends a valid number, the database will update it accordingly.
+
+Summary
+onDragEnd Handler:
+
+Traverse the DOM to get the container’s section ID.
+Compute a destination index (falling back on the sorted list if needed).
+Rebuild the full list for that section by removing the dragged task and reinserting it at the computed index.
+Call onReorderTasks with the full, updated list.
+handleReorderTasks:
+
+Map over the full reordered list and compute order as (index + 1) * 10000.
+Log each computed order for debugging.
+Update tasks sequentially.

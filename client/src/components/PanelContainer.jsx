@@ -38,7 +38,6 @@ const PanelContainer = ({
       return;
     }
 
-    // Get active task details
     const draggedTaskId = parseInt(active.id);
     const draggedTask = tasks.find(task => task.id === draggedTaskId);
 
@@ -53,12 +52,10 @@ const PanelContainer = ({
       if (element.dataset && element.dataset.sectionId) {
         return element.dataset.sectionId;
       }
-      if (element.parentElement) {
-        return getSectionId(element.parentElement);
-      }
-      return null;
+      return element.parentElement ? getSectionId(element.parentElement) : null;
     };
 
+    // Try to get section ID from over data first, then fallback to DOM traversal
     const targetSectionId = over.data?.current?.sectionId || getSectionId(over.node);
 
     if (!targetSectionId || !['Triage', 'A', 'B', 'C'].includes(targetSectionId)) {
@@ -66,24 +63,31 @@ const PanelContainer = ({
       return;
     }
 
-    // Get the full sorted list for the target section
+    // Get all tasks in the target section, sorted by order
     const sectionTasks = tasks
       .filter(task => task.section === targetSectionId)
       .sort((a, b) => a.order - b.order);
 
-    // Remove dragged task from the list if it's in this section
+    // Remove the dragged task from the section's task list
     const filteredTasks = sectionTasks.filter(task => task.id !== draggedTaskId);
 
-    // Compute destination index with fallback
-    const destIndex = over.data?.current?.index ?? filteredTasks.length;
+    // Try to get destination index from the drop target
+    let destIndex;
+    if (over.data?.current?.sortable?.index !== undefined) {
+      // If dropping on another task, use its index
+      destIndex = over.data.current.sortable.index;
+    } else {
+      // If dropping in a section (not on a task), append to the end
+      destIndex = filteredTasks.length;
+    }
 
-    // Insert dragged task at the correct position
+    // Insert the dragged task at the computed position
     filteredTasks.splice(destIndex, 0, {
       ...draggedTask,
       section: targetSectionId
     });
 
-    // Recalculate all orders sequentially
+    // Recalculate orders for all tasks in the section
     const finalTasks = filteredTasks.map((task, index) => ({
       ...task,
       order: (index + 1) * 10000
