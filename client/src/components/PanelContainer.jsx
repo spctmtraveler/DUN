@@ -32,88 +32,65 @@ const PanelContainer = ({
     useSensor(KeyboardSensor)
   );
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-
-    if (!active || !over) {
+  const handleDragEnd = ({ active, over }) => {
+    if (!over) {
       console.log('[DragEnd] No valid drop target');
       return;
     }
 
-    const activeId = parseInt(active.id);
-    const activeTask = tasks.find(t => t.id === activeId);
-    const overId = parseInt(over.id);
-    const overTask = tasks.find(t => t.id === overId);
+    // Get active task details
+    const draggedTaskId = parseInt(active.id);
+    const draggedTask = tasks.find(task => task.id === draggedTaskId);
 
-    if (!activeTask) {
-      console.log('[DragEnd] Active task not found:', activeId);
+    if (!draggedTask) {
+      console.error("[DragEnd] Dragged task not found:", draggedTaskId);
       return;
     }
 
-    // Get target section ID - either from the over task or from the droppable section
-    const targetSection = overTask ? overTask.section : over.data.current?.sectionId;
-
-    if (!targetSection || !['Triage', 'A', 'B', 'C'].includes(targetSection)) {
-      console.log('[DragEnd] Invalid target section:', targetSection);
-      return;
-    }
-
-    // Get ALL tasks in target section and sort by order
-    const sectionTasks = tasks
-      .filter(task => task.section === targetSection)
-      .sort((a, b) => a.order - b.order);
-
-    // Create a full copy of section tasks excluding the active task
-    const updatedTasks = sectionTasks.filter(t => t.id !== activeId);
-
-    let newOrder;
-    if (overTask) {
-      const overIndex = updatedTasks.findIndex(t => t.id === overId);
-
-      if (overIndex === -1) {
-        // Over task not found - append to end
-        newOrder = (updatedTasks.length === 0) 
-          ? 10000 
-          : updatedTasks[updatedTasks.length - 1].order + 10000;
-      } else if (overIndex === 0) {
-        // Dropped at start - place before first
-        newOrder = updatedTasks[0].order / 2;
-      } else {
-        // Calculate midpoint between tasks
-        const prevOrder = updatedTasks[overIndex - 1].order;
-        const nextOrder = updatedTasks[overIndex].order;
-        newOrder = (prevOrder + nextOrder) / 2;
+    // Get section ID reliably from DOM traversal
+    const getSectionId = (element) => {
+      if (!element) return null;
+      if (element.dataset && element.dataset.sectionId) {
+        return element.dataset.sectionId;
       }
-    } else {
-      // Dropping into empty section or at the end
-      newOrder = updatedTasks.length === 0 
-        ? 10000 
-        : updatedTasks[updatedTasks.length - 1].order + 10000;
-    }
-
-    // Insert task at correct position
-    const updatedTask = {
-      ...activeTask,
-      section: targetSection,
-      order: newOrder
+      if (element.parentElement) {
+        return getSectionId(element.parentElement);
+      }
+      return null;
     };
 
-    // Find insert position based on order
-    const insertIndex = updatedTasks.findIndex(t => t.order > newOrder);
-    if (insertIndex === -1) {
-      updatedTasks.push(updatedTask);
-    } else {
-      updatedTasks.splice(insertIndex, 0, updatedTask);
+    const targetSectionId = over.data?.current?.sectionId || getSectionId(over.node);
+
+    if (!targetSectionId || !['Triage', 'A', 'B', 'C'].includes(targetSectionId)) {
+      console.error("[DragEnd] Invalid target section:", targetSectionId);
+      return;
     }
 
-    // Recalculate all orders to ensure even spacing
-    const finalTasks = updatedTasks.map((task, index) => ({
+    // Get the full sorted list for the target section
+    const sectionTasks = tasks
+      .filter(task => task.section === targetSectionId)
+      .sort((a, b) => a.order - b.order);
+
+    // Remove dragged task from the list if it's in this section
+    const filteredTasks = sectionTasks.filter(task => task.id !== draggedTaskId);
+
+    // Compute destination index with fallback
+    const destIndex = over.data?.current?.index ?? filteredTasks.length;
+
+    // Insert dragged task at the correct position
+    filteredTasks.splice(destIndex, 0, {
+      ...draggedTask,
+      section: targetSectionId
+    });
+
+    // Recalculate all orders sequentially
+    const finalTasks = filteredTasks.map((task, index) => ({
       ...task,
       order: (index + 1) * 10000
     }));
 
-    console.log(`[DragEnd] Moving task ${activeId} to section ${targetSection} with order ${newOrder}`);
-    onReorderTasks(targetSection, finalTasks);
+    console.log(`[DragEnd] Moving task ${draggedTaskId} to section ${targetSectionId} at index ${destIndex}`);
+    onReorderTasks(targetSectionId, finalTasks);
   };
 
   return (

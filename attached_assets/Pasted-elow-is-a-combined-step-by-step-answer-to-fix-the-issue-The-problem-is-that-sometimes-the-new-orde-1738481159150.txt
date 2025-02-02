@@ -1,0 +1,161 @@
+elow is a combined, step‐by‐step answer to fix the issue. The problem is that sometimes the new order is computed as NaN—usually because the destination index isn’t properly determined when reordering within a list. In our case, we must (1) reliably compute a destination index (even for empty lists or edge drops) and (2) rebuild the full, sorted list of tasks for the target section so that every task gets a new order value.
+
+Below are the recommended changes:
+
+Step 1: Update Your Drag‑End Handler (e.g. in PanelContainer.jsx)
+Goal:
+Ensure that when dragging within a list, you compute a valid destination index and a full list of tasks.
+
+Changes:
+
+Traverse the DOM for the Target Section:
+(Assuming you already use a helper to get the section from the drop target.)
+
+Compute the Destination Index with a Fallback:
+Make sure that if the drag‑drop library doesn’t provide an index (or it’s undefined), you default to the length of the list.
+
+Rebuild the Full Sorted List:
+Filter tasks in the target section, sort them by order, remove the dragged task, and then insert it at the computed index.
+
+Example Code:
+
+js
+Copy
+// BEFORE (conceptual):
+// onDragEnd simply reads destination.index
+const onDragEnd = ({ active, over }) => {
+  if (!over) return;
+  const targetSectionId = getSectionId(over.node); // returns a valid section string
+  const destinationIndex = over.data.current.index; // may be undefined sometimes
+  // Call moveTask with destinationIndex...
+};
+
+// AFTER:
+const onDragEnd = ({ active, over }) => {
+  if (!over) return;
+
+  // Get the target section ID from the drop container
+  const getSectionId = (element) => {
+    if (element.dataset && element.dataset.sectionId) return element.dataset.sectionId;
+    if (element.parentElement) return getSectionId(element.parentElement);
+    return null;
+  };
+
+  const targetSectionId = getSectionId(over.node);
+  if (!targetSectionId) {
+    console.error("[DragEnd] No valid section found");
+    return;
+  }
+
+  // Retrieve the full sorted list for the target section
+  const sectionTasks = tasks
+    .filter(task => task.section === targetSectionId)
+    .sort((a, b) => a.order - b.order);
+
+  // Remove the dragged task from this list
+  const draggedTaskId = active.id;
+  const draggedTask = tasks.find(task => task.id === draggedTaskId);
+  const filteredSectionTasks = sectionTasks.filter(task => task.id !== draggedTaskId);
+
+  // Compute destination index reliably:
+  const destIndex =
+    (over.data?.current?.index !== undefined)
+      ? over.data.current.index
+      : filteredSectionTasks.length; // drop at end if index not provided
+
+  // Insert the dragged task into the filtered list at the destination index
+  filteredSectionTasks.splice(destIndex, 0, draggedTask);
+
+  // Now call onReorderTasks with the full list:
+  onReorderTasks(targetSectionId, filteredSectionTasks);
+};
+Explanation:
+This ensures that even if the drag event’s data lacks an index, you default to appending at the end. By rebuilding the list from the tasks in the target section, you guarantee a full sorted array.
+
+Step 2: Update handleReorderTasks in Home.jsx
+Goal:
+Recalculate order values based on the complete, correctly ordered list.
+
+Changes:
+
+Before:
+
+js
+Copy
+const updates = reorderedTasks.map((task, index) => ({
+  id: task.id,
+  section: sectionId,
+  order: (index + 1) * 10000
+}));
+After (with added logging):
+
+js
+Copy
+const handleReorderTasks = async (sectionId, reorderedTasks) => {
+  console.log(`[handleReorderTasks] Starting reorder in section ${sectionId}`);
+  console.log("Reordered tasks:", reorderedTasks);
+
+  try {
+    const updates = reorderedTasks.map((task, index) => {
+      const newOrder = (index + 1) * 10000;
+      console.log(`Task ${task.id} at index ${index} => order ${newOrder}`);
+      return {
+        id: task.id,
+        section: sectionId,
+        order: newOrder
+      };
+    });
+
+    // Optimistically update the UI
+    queryClient.setQueryData(['/api/tasks'], old => {
+      const updated = [...old];
+      updates.forEach(update => {
+        const idx = updated.findIndex(t => t.id === update.id);
+        if (idx !== -1) {
+          updated[idx] = { ...updated[idx], order: update.order, section: update.section };
+        }
+      });
+      return updated;
+    });
+
+    // Update tasks sequentially
+    for (const update of updates) {
+      await updateTaskMutation.mutateAsync({
+        id: update.id,
+        section: update.section,
+        order: update.order
+      });
+    }
+  } catch (error) {
+    console.error('[handleReorderTasks] Error:', error);
+    queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+  }
+};
+Explanation:
+The new logging confirms that every task in the reordered list gets a computed order. (If any index were missing, newOrder would be NaN.) By rebuilding the list from scratch, we avoid duplicate order values.
+
+Step 3: Verify That the Database Field Is Handled Correctly
+Your PATCH endpoint in server/routes.ts is already updating the order field from req.body. Just confirm that:
+
+ts
+Copy
+updateData.order = req.body.hasOwnProperty("order")
+          ? req.body.order
+          : existingTask.order;
+If req.body.order is sent as a number (which it is, via our multiplication), this part is correct.
+
+Summary
+Drag‑End Handler:
+
+Traverse upward to get the container’s data‑section‑id.
+Compute a destination index with a fallback if over.data.current.index is undefined.
+Rebuild the full sorted list for the target section by filtering, sorting, removing the dragged task, and then splicing it in at the destination index.
+Pass this full array to onReorderTasks.
+handleReorderTasks:
+
+Map over the full reorderedTasks array to compute new order values as (index + 1) * 10000.
+Log the computed order for debugging.
+Update the UI and send updates to the server.
+Server PATCH Endpoint:
+
+No change needed as long as req.body.order is a valid number.
