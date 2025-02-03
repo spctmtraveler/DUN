@@ -40,6 +40,29 @@ const Task = ({
     },
   });
 
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId) => {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete task');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+  });
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    try {
+      await deleteTaskMutation.mutateAsync(id);
+      onDeleteTask(id);
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
+  };
+
   const handleClick = (e) => {
     // Don't trigger selection when clicking controls
     if (!e.target.closest('.task-controls, .task-checkbox, .task-grip')) {
@@ -107,10 +130,7 @@ const Task = ({
           </Popover>
           <button 
             className="task-delete"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteTask(id);
-            }}
+            onClick={handleDelete}
           >
             <X size={16} />
           </button>
